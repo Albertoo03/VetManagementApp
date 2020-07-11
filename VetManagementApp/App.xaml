@@ -1,0 +1,23 @@
+﻿<Application x:Class="VetManagementApp.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:VetManagementApp"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:vmah="clr-namespace:VetManagementApp.Helpers"
+             d1p1:Ignorable="d" 
+             xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:VetManagementApp.ViewModel"
+             StartupUri="View/MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <vm:ViewModelLocator x:Key="Locator" d:IsDataSource="True"/>
+            <ObjectDataProvider x:Key="enumPurposes" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type TypeName="vmah:HelpfulUtilities+PurposeOfVisit"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+        </ResourceDictionary>
+
+    </Application.Resources>
+</Application>
