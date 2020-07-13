@@ -15,7 +15,10 @@ namespace VetManagementApp.Model
         private VetManagementAppDbContext _dbContext;
         private CustomerRepository _customers;
         private CommonRepository<Appointment> _appointments;
-        private CommonRepository<AnimalBasicInfo> _animalBasicInfos;
+        private AnimalBasicInfoRepository _animalBasicInfos;
+        private CommonRepository<Medicine> _medicines;
+        private AnimalRepository _animals;
+
 
         private bool _disposed = false; 
 
@@ -39,9 +42,17 @@ namespace VetManagementApp.Model
         {
             get => _appointments ?? new CommonRepository<Appointment>(_dbContext);
         }
-        public ICommonRepository<AnimalBasicInfo> AnimalBasicInfos
+        public IAnimalBasicInfoRepository AnimalBasicInfos
         {
-            get => _animalBasicInfos ?? new CommonRepository<AnimalBasicInfo>(_dbContext);
+            get => _animalBasicInfos ?? new AnimalBasicInfoRepository(_dbContext);
+        }
+        public ICommonRepository<Medicine> Medicines
+        {
+            get => _medicines ?? new CommonRepository<Medicine>(_dbContext);
+        }
+        public IAnimalRepository Animals
+        {
+            get => _animals ?? new AnimalRepository(_dbContext);
         }
 
         protected virtual void Dispose(bool haveToDispose)
