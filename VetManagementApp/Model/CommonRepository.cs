@@ -5,6 +5,7 @@ using System.Data.Entity;
 using System.Data.Entity.Core.Objects.DataClasses;
 using System.Data.Entity.Migrations;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using VetManagementApp.Model.DbContexts;
@@ -63,13 +64,20 @@ namespace VetManagementApp.Model
             return _dbSet.Find(entityId);
         }
 
+        public bool DeleteAll()
+        {
+            _dbSet.RemoveRange(_dbSet.ToList());
+
+            return (_dbSet.Count() == 0) ? true : false;
+        }
+
         //public void Update(T entity)
         //{
         //    _dbSet.Attach(entity);
         //    throw new NotImplementedException();
         //}
 
-        public ObservableCollection<T> All
+        public virtual ICollection<T> All
         {
             get
             {
