@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using VetManagementApp.Model;
+using static VetManagementApp.Helpers.HelpfulUtilities;
 
 namespace VetManagementApp.Converters
 {
@@ -40,6 +41,21 @@ namespace VetManagementApp.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return Binding.DoNothing;
+        }
+    }
+
+    public class GenderSelectionConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var isMaleChecked = (bool)value;
+
+            return (isMaleChecked == true) ? Gender.Male : Gender.Female;
         }
     }
 }
