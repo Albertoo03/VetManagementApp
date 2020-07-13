@@ -10,14 +10,7 @@ using static VetManagementApp.Interfaces.Interfaces;
 
 namespace VetManagementApp.Model
 {
-    public class AnimalBasicInfo
-    {
-        [Key]
-        public string Species { get; set; }
 
-        public AnimalGroup Group { get; set; }
-        public virtual ObservableCollection<Medicine> AvailableMedicines { get; set; }
-    }
 
     public class Animal
     {
@@ -26,9 +19,9 @@ namespace VetManagementApp.Model
         public string Name { get; set; }
         public Gender Gender { get; set; }
         public virtual Customer Owner { get; set; }
-        public virtual ObservableCollection<Appointment> Appointments { get; set; }
+        public virtual ICollection<Appointment> Appointments { get; set; }
 
-        public virtual ObservableCollection<Medicine> AssignedMedicines { get; set; }
+        public virtual ICollection<Medicine> AssignedMedicines { get; set; }
         //public enum PrescribedMedication { get;set; }
 
         public bool IsCurrentlyBeingTreated { get; set; }
@@ -38,6 +31,12 @@ namespace VetManagementApp.Model
         //{
         //    throw new NotImplementedException();
         //}
+
+
+        public override string ToString()
+        {
+            return Name + ", " + SpeciesInfo.Species;
+        }
     }
 
     //public class TreatedAnimal : AnimalBase
