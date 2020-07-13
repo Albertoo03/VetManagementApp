@@ -11,9 +11,9 @@ namespace VetManagementApp.Interfaces
 {
     public class Interfaces
     {
-        public interface IAnimal
+        public interface IAnimalRepository : ICommonRepository<Animal>
         {
-            ObservableCollection<Medicine> GetListOfAvailableMedicines();
+            //ObservableCollection<Medicine> GetListOfAvailableMedicines();
         }
 
         public interface IMedicine
@@ -29,19 +29,29 @@ namespace VetManagementApp.Interfaces
             
         }
 
+        public interface IAnimalBasicInfoRepository : ICommonRepository<AnimalBasicInfo>
+        {
+            void Delete(string species);
+        }
+
         public interface ICommonRepository<T>
         {
             ICollection<T> GetAll();
             T Get(int entityId);
             void Add(T entity);
             bool Delete(int entityId);
-            ObservableCollection<T> All { get; }
+            ICollection<T> All { get; }
+            bool DeleteAll();
 
         }
 
         public interface IUnitOfWork
         {
             ICustomerRepository Customers { get; }
+            IAnimalBasicInfoRepository AnimalBasicInfos { get; }
+            IAnimalRepository Animals { get; }
+            ICommonRepository<Medicine> Medicines { get; }
+            ICommonRepository<Appointment> Appointments { get; }
 
             void Save();
         }
