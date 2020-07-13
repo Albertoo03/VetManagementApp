@@ -17,6 +17,11 @@
                     <x:Type TypeName="vmah:HelpfulUtilities+PurposeOfVisit"/>
                 </ObjectDataProvider.MethodParameters>
             </ObjectDataProvider>
+            <ObjectDataProvider x:Key="enumAnimalGroup" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type TypeName="vmah:HelpfulUtilities+AnimalGroup"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
         </ResourceDictionary>
 
     </Application.Resources>
