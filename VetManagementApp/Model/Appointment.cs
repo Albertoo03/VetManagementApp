@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace VetManagementApp.Model
 {
     public class Appointment
     {
+        [Key]
         public int Id { get; set; }
         public virtual Customer AppointedCustomer { get; set; }
         public virtual Animal AppointedAnimal { get; set; }

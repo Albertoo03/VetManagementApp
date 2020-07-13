@@ -18,53 +18,7 @@ namespace VetManagementApp.Model
         {
             this._vetDbContext = dbContext;
         }
-        
-        //public void Add(Customer entity)
-        //{
-        //    using (var context = new VetManagementAppDbContext())
-        //    {
-        //        var queryResult = context.Customers.Add(entity);
-        //        context.SaveChanges();
-        //    }
-        //}
-
-        //public bool Delete(int customerId)
-        //{
-        //    using (var context = new VetManagementAppDbContext())
-        //    {
-        //        var customerToRemove = context.Customers.Where(customer => customer.Id == customerId).FirstOrDefault();
-
-        //        if (customerToRemove == null)
-        //            return false;
-
-        //        context.Customers.Remove(customerToRemove);
-        //        context.SaveChanges();
-
-        //        return true;
-        //    }
-        //}
-
-        //public ICollection<Customer> GetAll()
-        //{
-        //    using(var context = new VetManagementAppDbContext())
-        //    {
-        //        var queryResult = context.Customers.ToList();
-
-        //        return queryResult;
-        //    }
-        //}
-
-        //public ObservableCollection<Customer> All
-        //{
-        //    get
-        //    {
-        //        _dbSet.Load();
-        //        var queryResult = _dbSet.Local;
-
-        //        return queryResult;                
-        //    }
-        //}
-
+ 
 
         public ICollection<Animal> GetAllAnimals(Customer customer)
         {
@@ -83,7 +37,7 @@ namespace VetManagementApp.Model
         public IEnumerable<Appointment> GetPastAppointments(Customer customer)
         {
             var queryResult = _vetDbContext.Appointments.Where(app => app.AppointedCustomer == customer && app.Date < DateTime.Now.Date).ToList();
-
+            
             return queryResult;
         }
 
@@ -92,6 +46,18 @@ namespace VetManagementApp.Model
             var queryResult = _vetDbContext.Animals.Where(animal => animal.Owner == customer && animal.IsCurrentlyBeingTreated == true).ToList();
 
             return queryResult;
+        }
+
+        public override ICollection<Customer> All
+        {
+            get
+            {
+                _vetDbContext.Customers.Include(p => p.Appointments).Include(p => p.OwnedAnimals).Load();
+
+                var queryResult = _vetDbContext.Customers.Local;
+
+                return queryResult;
+            }
         }
 
     }

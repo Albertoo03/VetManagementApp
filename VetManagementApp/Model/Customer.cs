@@ -35,9 +35,9 @@ namespace VetManagementApp.Model
 
 
 
-        public ObservableCollection<Animal> OwnedAnimals { get; set; }
+        public virtual ICollection<Animal> OwnedAnimals { get; set; }
 
-        public ObservableCollection<Appointment> Appointments { get; set; }
+        public virtual ICollection<Appointment> Appointments { get; set; }
 
         public override string ToString()
         {
