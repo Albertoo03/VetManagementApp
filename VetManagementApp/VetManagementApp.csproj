@@ -77,7 +77,18 @@
     <Compile Include="Migrations\202007110803042_MedicineUpdate.designer.cs">
       <DependentUpon>202007110803042_MedicineUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202007130715572_AnimalBasicInfosUpdateAndObsCollToICollTypeChange.cs" />
+    <Compile Include="Migrations\202007130715572_AnimalBasicInfosUpdateAndObsCollToICollTypeChange.designer.cs">
+      <DependentUpon>202007130715572_AnimalBasicInfosUpdateAndObsCollToICollTypeChange.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007130933485_AddedCollectionsOfAnimalsToMedicineTable.cs" />
+    <Compile Include="Migrations\202007130933485_AddedCollectionsOfAnimalsToMedicineTable.designer.cs">
+      <DependentUpon>202007130933485_AddedCollectionsOfAnimalsToMedicineTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Model\AnimalBasicInfo.cs" />
+    <Compile Include="Model\AnimalBasicInfoRepository.cs" />
+    <Compile Include="Model\AnimalRepository.cs" />
     <Compile Include="View\PreliminaryDatabaseFillingWindow.xaml.cs">
       <DependentUpon>PreliminaryDatabaseFillingWindow.xaml</DependentUpon>
     </Compile>
@@ -138,6 +149,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202007110803042_MedicineUpdate.resx">
       <DependentUpon>202007110803042_MedicineUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007130715572_AnimalBasicInfosUpdateAndObsCollToICollTypeChange.resx">
+      <DependentUpon>202007130715572_AnimalBasicInfosUpdateAndObsCollToICollTypeChange.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007130933485_AddedCollectionsOfAnimalsToMedicineTable.resx">
+      <DependentUpon>202007130933485_AddedCollectionsOfAnimalsToMedicineTable.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
