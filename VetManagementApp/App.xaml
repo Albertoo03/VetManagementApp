@@ -10,18 +10,7 @@
              xmlns:vm="clr-namespace:VetManagementApp.ViewModel"
              StartupUri="View/MainWindow.xaml">
     <Application.Resources>
-        <ResourceDictionary>
-            <vm:ViewModelLocator x:Key="Locator" d:IsDataSource="True"/>
-            <ObjectDataProvider x:Key="enumPurposes" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
-                <ObjectDataProvider.MethodParameters>
-                    <x:Type TypeName="vmah:HelpfulUtilities+PurposeOfVisit"/>
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
-            <ObjectDataProvider x:Key="enumAnimalGroup" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
-                <ObjectDataProvider.MethodParameters>
-                    <x:Type TypeName="vmah:HelpfulUtilities+AnimalGroup"/>
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
+        <ResourceDictionary Source="ResourceDictionary.xaml">
         </ResourceDictionary>
 
     </Application.Resources>
