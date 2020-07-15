@@ -14,7 +14,7 @@ namespace VetManagementApp.Model
     {
         private VetManagementAppDbContext _dbContext;
         private CustomerRepository _customers;
-        private CommonRepository<Appointment> _appointments;
+        private AppointmentRepository _appointments;
         private AnimalBasicInfoRepository _animalBasicInfos;
         private CommonRepository<Medicine> _medicines;
         private AnimalRepository _animals;
@@ -38,9 +38,9 @@ namespace VetManagementApp.Model
             get => _customers ?? new CustomerRepository(_dbContext);
         }
 
-        public ICommonRepository<Appointment> Appointments
+        public IAppointmentRepository Appointments
         {
-            get => _appointments ?? new CommonRepository<Appointment>(_dbContext);
+            get => _appointments ?? new AppointmentRepository(_dbContext);
         }
         public IAnimalBasicInfoRepository AnimalBasicInfos
         {

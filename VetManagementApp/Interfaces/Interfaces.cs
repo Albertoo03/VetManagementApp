@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,13 @@ namespace VetManagementApp.Interfaces
     {
         public interface IAnimalRepository : ICommonRepository<Animal>
         {
+            ICollection<Appointment> GetAppointments(Animal animal);
             //ObservableCollection<Medicine> GetListOfAvailableMedicines();
+        }
+
+        public interface IAppointmentRepository : ICommonRepository<Appointment>
+        {
+            IEnumerable<Appointment> GetPastAppointments(Customer customer);
         }
 
         public interface IMedicine
@@ -23,15 +30,18 @@ namespace VetManagementApp.Interfaces
 
         public interface ICustomerRepository : ICommonRepository<Customer>
         {
-            IEnumerable<Appointment> GetPastAppointments(Customer customer);
+
             ICollection<Animal> GetAllAnimals(Customer customer);
             IEnumerable<Animal> GetTreatedAnimals(Customer customer);
+
+            ICollection<Appointment> GetAppointments(Customer customer);
             
         }
 
         public interface IAnimalBasicInfoRepository : ICommonRepository<AnimalBasicInfo>
         {
             void Delete(string species);
+            AnimalBasicInfo GetBySpecies(string species);
         }
 
         public interface ICommonRepository<T>
@@ -42,7 +52,9 @@ namespace VetManagementApp.Interfaces
             bool Delete(int entityId);
             ICollection<T> All { get; }
             bool DeleteAll();
-
+            void Delete(Expression<Func<T, bool>> predicate);
+            void SetAsUnchanged(T entity);
+            void SetAsAdded(T entity);
         }
 
         public interface IUnitOfWork
@@ -51,7 +63,7 @@ namespace VetManagementApp.Interfaces
             IAnimalBasicInfoRepository AnimalBasicInfos { get; }
             IAnimalRepository Animals { get; }
             ICommonRepository<Medicine> Medicines { get; }
-            ICommonRepository<Appointment> Appointments { get; }
+            IAppointmentRepository Appointments { get; }
 
             void Save();
         }

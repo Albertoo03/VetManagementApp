@@ -11,8 +11,16 @@ namespace VetManagementApp.Model.DbContexts
     {
         public VetManagementAppDbContext() : base("VetManagementAppDb")
         {
-
+            //this.Configuration.LazyLoadingEnabled = false;
         }
+
+        //protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.ComplexType<Animal>()
+        //        .Property(p => p.SpeciesInfo.Species).IsOptional();
+
+        //    base.OnModelCreating(modelBuilder);
+        //}
 
         public DbSet<Customer> Customers { get; set; }
         public DbSet<AnimalBasicInfo> AnimalsBasicInfos { get; set; }

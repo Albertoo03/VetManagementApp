@@ -4,6 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.Entity.Infrastructure;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -23,7 +25,6 @@ namespace VetManagementApp.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-
         #region Private variables
         private string _animalBasicInfoToAddSpecies;
         private AnimalGroup _animalBasicInfoToAddGroup;
@@ -38,15 +39,18 @@ namespace VetManagementApp.ViewModel
         private string _customerToAddCity;
         private string _customerToAddPostalCode;
         private string _customerToAddStreet;
-        private uint _customerToAddHouseNumber;
+        private int _customerToAddHouseNumber;
         private string _customerToAddContact;
         private string _animalToAddName;
-        private string _animalToAddSpecies;
+        private AnimalBasicInfo _animalToAddSpecies;
         private string _appointmentDescription;
 
         private bool _showOwnedAnimalsChecked;
         private bool _showAppointmentsHistoryChecked;
-
+        private bool _addNewCustomerIsChecked = true;
+        private bool _customerFromDatabaseIsChecked;
+        private bool _addNewAnimalIsChecked = true;
+        private bool _animalFromDatabaseIsChecked;
 
         private Customer _selectedCustomer;
         private AnimalBasicInfo _selectedAnimalBasicInfo;
@@ -55,9 +59,13 @@ namespace VetManagementApp.ViewModel
         private Animal _selectedAnimalInAppointmentTab;
         private Customer _selectedCustomerInAppointmentTab;
 
+        private Customer _appointmentCustomer;
+        private Animal _appointmentAnimal;
+        private Appointment _selectedAppointment;
+
         private Gender _animalToAddGender;
         private PurposeOfVisit _appointmentPurposeOfVisit;
-        private DateTime _appointmentDate;
+        private DateTime _appointmentDate = DateTime.Now;
         #endregion
 
         #region Properties
@@ -186,7 +194,7 @@ namespace VetManagementApp.ViewModel
                 }
             }
         }
-        public uint CustomerToAddHouseNumber
+        public int CustomerToAddHouseNumber
         {
             get => _customerToAddHouseNumber;
             set
@@ -223,7 +231,7 @@ namespace VetManagementApp.ViewModel
                 }
             }
         }
-        public string AnimalToAddSpecies 
+        public AnimalBasicInfo AnimalToAddSpecies 
         {
             get => _animalToAddSpecies;
             set
@@ -273,6 +281,90 @@ namespace VetManagementApp.ViewModel
             }
         }
         
+        public bool AddNewCustomerIsChecked
+        {
+            get => _addNewCustomerIsChecked;
+            set
+            {
+                if(_addNewCustomerIsChecked != value)
+                {
+                    _addNewCustomerIsChecked = value;
+                    RaisePropertyChanged(() => AddNewCustomerIsChecked);
+                }
+            }
+        }
+
+        public bool CustomerFromDatabaseIsChecked
+        {
+            get => _customerFromDatabaseIsChecked;
+            set
+            {
+                if (_customerFromDatabaseIsChecked != value)
+                {
+                    _customerFromDatabaseIsChecked = value;
+                    RaisePropertyChanged(() => CustomerFromDatabaseIsChecked);
+                }
+            }
+        }
+
+        public bool AddNewAnimalIsChecked
+        {
+            get => _addNewAnimalIsChecked;
+            set
+            {
+                if (_addNewAnimalIsChecked != value)
+                {
+                    _addNewAnimalIsChecked = value;
+                    RaisePropertyChanged(() => AddNewAnimalIsChecked);
+                }
+            }
+        }
+
+        public bool AnimalFromDatabaseIsChecked
+        {
+            get => _animalFromDatabaseIsChecked;
+            set
+            {
+                if (_animalFromDatabaseIsChecked != value)
+                {
+                    _animalFromDatabaseIsChecked = value;
+                    RaisePropertyChanged(() => AnimalFromDatabaseIsChecked);
+                }
+            }
+        }
+
+        public bool NewCustomerAllFieldsFilled
+        {
+            get 
+            {
+                if (CustomerToAddFirstName.Equals("") || CustomerToAddLastName.Equals("") || CustomerToAddCity.Equals("") || CustomerToAddPostalCode.Equals("")
+                    || CustomerToAddStreet.Equals("") || CustomerToAddHouseNumber.Equals(0) || CustomerToAddContact.Equals(""))
+                    return false;
+                else
+                    return true;
+            }
+        }
+        public bool NewAnimalAllFieldsFilled
+        {
+            get
+            {
+                if (AnimalToAddName.Equals("") || AnimalToAddSpecies.Species.Equals(""))
+                    return false;
+                else
+                    return true;
+            }
+        }
+
+        public bool AppointmentsInfoAllFieldsFilled
+        {
+            get
+            {
+                if (AppointmentDate == null || AppointmentDescription == null)
+                    return false;
+                else
+                    return true;
+            }
+        }
 
         public Customer SelectedCustomer
         {
@@ -348,6 +440,19 @@ namespace VetManagementApp.ViewModel
         }
 
 
+        public Appointment SelectedAppointment
+        {
+            get => _selectedAppointment;
+            set
+            {
+                if (_selectedAppointment != value)
+                {
+                    _selectedAppointment = value;
+                    RaisePropertyChanged(() => SelectedAppointment);
+                }
+            }
+        }
+        
         public Gender AnimalToAddGender
         {
             get => _animalToAddGender;
@@ -399,7 +504,8 @@ namespace VetManagementApp.ViewModel
         private IAsyncCommand _removeSelectedAnimalBasicInfoAsyncCommand;
         private IAsyncCommand _removeSelectedMedicineAsyncCommand;
         private IAsyncCommand _removeAllCustomersAsyncCommand;
-
+        private IAsyncCommand _makeAnAppointmentAsyncCommand;
+        private IAsyncCommand _removeSelectedAppointmentAsyncCommand;
 
         public IAsyncCommand RemoveSelectedCustomerAsyncCommand
         {
@@ -436,6 +542,14 @@ namespace VetManagementApp.ViewModel
         public IAsyncCommand RemoveAllCustomersAsyncCommand
         {
             get => _removeAllCustomersAsyncCommand ?? new AsyncCommand(() => RemoveAllCustomersAsync());
+        }
+        public IAsyncCommand MakeAnAppointmentAsyncCommand
+        {
+            get => _makeAnAppointmentAsyncCommand ?? new AsyncCommand(() => MakeAnAppointmentAsync());
+        }
+        public IAsyncCommand RemoveSelectedAppointmentAsyncCommand
+        {
+            get => _removeSelectedAppointmentAsyncCommand ?? new AsyncCommand(() => RemoveSelectedAppointmentAsync());
         }
         #endregion
 
@@ -527,12 +641,13 @@ namespace VetManagementApp.ViewModel
 
         private async Task AddNewAnimalAsync(IList selectedItems)
         {
-
+            
             AnimalBasicInfo animalBasicInfo = new AnimalBasicInfo();
             animalBasicInfo.Species = AnimalBasicInfoToAddSpecies;
             animalBasicInfo.Group = AnimalBasicInfoToAddGroup;
             var selectedMedicinesList = selectedItems.Cast<Medicine>();
             animalBasicInfo.AvailableMedicines = new ObservableCollection<Medicine>();
+            animalBasicInfo.AssignedAnimals = new ObservableCollection<Animal>();
 
             using (var uow = new UnitOfWork())
             {
@@ -541,6 +656,7 @@ namespace VetManagementApp.ViewModel
                     var medicineToAdd = uow.Medicines.Get(medicine.Id);
                     animalBasicInfo.AvailableMedicines.Add(medicineToAdd);
                     medicineToAdd.AssignedAnimals.Add(animalBasicInfo);
+
                 }
 
                 uow.AnimalBasicInfos.Add(animalBasicInfo);
@@ -571,12 +687,26 @@ namespace VetManagementApp.ViewModel
 
         private async Task RemoveAllAnimalsAsync()
         {
-            using (var uow = new UnitOfWork())
+            try
             {
-                uow.AnimalBasicInfos.DeleteAll();
+                using (var uow = new UnitOfWork())
+                {
+                    uow.AnimalBasicInfos.DeleteAll();
 
-                uow.Save();
+                    uow.Save();
+                }
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.StackTrace);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.InnerException);
+                Debug.WriteLine("==================");
+            }
+
 
             RaisePropertyChanged(() => AnimalBasicInfos);
             SelectedAnimalBasicInfo = null;
@@ -599,16 +729,34 @@ namespace VetManagementApp.ViewModel
         {
             await Task.Run(() =>
             {
-                using (var unitOfWork = new UnitOfWork())
+                try
                 {
-                    if (SelectedAnimalBasicInfo == null)
-                        return;
+               
+                        using (var unitOfWork = new UnitOfWork())
+                        {
+                            if (SelectedAnimalBasicInfo == null)
+                                return;
 
-                    unitOfWork.AnimalBasicInfos.Delete(SelectedAnimalBasicInfo.Species);
+                            unitOfWork.AnimalBasicInfos.Delete(SelectedAnimalBasicInfo.Species);
 
-                    unitOfWork.Save();
+                            unitOfWork.Save();
+                        }
+
+                    
                 }
+                catch(Exception ex)
+                {
+                    Debug.WriteLine("==================");
+                    Debug.WriteLine(ex.Message);
+                    Debug.WriteLine("==================");
+                    Debug.WriteLine(ex.StackTrace);
+                    Debug.WriteLine("==================");
+                    Debug.WriteLine(ex.InnerException);
+                    Debug.WriteLine("==================");
 
+                    MessageBox.Show("You cannot delete this type because it is assigned to treated animal.");
+
+                }
             });
 
             SelectedAnimalBasicInfo = null;
@@ -635,6 +783,220 @@ namespace VetManagementApp.ViewModel
             RaisePropertyChanged(() => AnimalBasicInfos);
         }
 
+
+
+        private async Task MakeAnAppointmentAsync()
+        {
+            bool customerConditionsMet = false;
+            bool animalConditionsMet = false;
+            bool appointmentInfoConditionsMet = false;
+            bool allConditionsMet = false;
+
+
+            if(AddNewCustomerIsChecked)
+            {
+                customerConditionsMet = NewCustomerAllFieldsFilled;
+                animalConditionsMet = NewAnimalAllFieldsFilled;
+            }
+
+            if(CustomerFromDatabaseIsChecked)
+            {
+
+                if (SelectedCustomerInAppointmentTab != null)
+                    customerConditionsMet = true;
+
+                if(AddNewAnimalIsChecked)
+                {
+                    animalConditionsMet = NewAnimalAllFieldsFilled;
+                }
+
+                if(AnimalFromDatabaseIsChecked)
+                {
+                    if (SelectedAnimalInAppointmentTab != null)
+                        animalConditionsMet = true;
+                }
+            }
+
+            appointmentInfoConditionsMet = AppointmentsInfoAllFieldsFilled;
+
+
+            allConditionsMet = (customerConditionsMet && animalConditionsMet && appointmentInfoConditionsMet) ? true : false;
+
+            if (allConditionsMet == false)
+            {
+                MessageBox.Show("Fill out all fields in the form first!");
+                return;
+            }
+
+
+            var appointmentCustomer = new Customer();
+            var appointmentAnimal = new Animal();
+
+            if (AddNewCustomerIsChecked)
+            {
+                appointmentCustomer.FirstName = CustomerToAddFirstName;
+                appointmentCustomer.LastName = CustomerToAddLastName;
+                appointmentCustomer.City = CustomerToAddCity;
+                appointmentCustomer.PostalCode = CustomerToAddPostalCode;
+                appointmentCustomer.Street = CustomerToAddStreet;
+                appointmentCustomer.HouseNumber = CustomerToAddHouseNumber;
+                appointmentCustomer.Contact = CustomerToAddContact;
+
+                appointmentAnimal.Name = AnimalToAddName;
+                appointmentAnimal.Gender = AnimalToAddGender;
+
+                appointmentCustomer.OwnedAnimals = new ObservableCollection<Animal>();
+                appointmentCustomer.OwnedAnimals.Add(appointmentAnimal);
+
+                appointmentAnimal.Owner = appointmentCustomer;
+            }
+
+
+            if (CustomerFromDatabaseIsChecked)
+            {
+                appointmentCustomer = SelectedCustomerInAppointmentTab;
+
+                if (AddNewAnimalIsChecked)
+                {
+                    appointmentAnimal.Name = AnimalToAddName;
+                    appointmentAnimal.Gender = AnimalToAddGender;
+
+                    appointmentCustomer.OwnedAnimals.Add(appointmentAnimal);
+                    appointmentAnimal.Owner = appointmentCustomer;
+                    
+
+                }
+
+                if (AnimalFromDatabaseIsChecked)
+                {
+                    appointmentAnimal = SelectedAnimalInAppointmentTab;
+
+                    appointmentCustomer.OwnedAnimals.Add(appointmentAnimal);
+                }
+            }
+
+
+
+            Appointment appointment = new Appointment();
+            appointment.AppointedAnimal = appointmentAnimal;
+            appointment.AppointedCustomer = appointmentCustomer;
+            appointment.Date = AppointmentDate;
+            appointment.Description = AppointmentDescription;
+            appointment.PurposeOfVisit = AppointmentPurposeOfVisit;
+
+
+            try
+            {
+                using (var uow = new UnitOfWork())
+                {
+                    if(CustomerFromDatabaseIsChecked)
+                    {
+                        uow.Customers.SetAsUnchanged(appointmentCustomer);
+                    }
+
+                    if(AnimalFromDatabaseIsChecked)
+                    {
+                        uow.Animals.SetAsUnchanged(appointmentAnimal);
+                    }
+
+                    var listOfAppointments = uow.Customers.GetAppointments(appointmentCustomer);
+
+                    if (listOfAppointments.Count() < 1)
+                        appointmentCustomer.Appointments = new ObservableCollection<Appointment>();
+                    else
+                        appointmentCustomer.Appointments = listOfAppointments;
+
+                    appointmentCustomer.Appointments.Add(appointment);
+
+
+                    var listOfAnimalAppointments = uow.Animals.GetAppointments(appointmentAnimal);
+
+                    if (listOfAnimalAppointments.Count() < 1)
+                        appointmentAnimal.Appointments = new ObservableCollection<Appointment>(listOfAnimalAppointments);
+                    else
+                        appointmentAnimal.Appointments = listOfAnimalAppointments;
+
+
+                    appointmentAnimal.Appointments.Add(appointment);
+
+
+                    if (AddNewAnimalIsChecked)
+                    {
+                        uow.Animals.SetAsAdded(appointmentAnimal);
+
+                        var animalBasicInfo = uow.AnimalBasicInfos.GetBySpecies(AnimalToAddSpecies.Species);
+
+                        
+                        //animalBasicInfo.AssignedAnimals = new ObservableCollection<Animal>();
+
+                        //animalBasicInfo.AssignedAnimals.Add(appointmentAnimal);
+                        appointmentAnimal.SpeciesInfo = animalBasicInfo;
+                        //var basicInfo = animalBasicInfo.AssignedAnimals.Where(animal => animal.Id == appointmentAnimal.Id).FirstOrDefault().SpeciesInfo;
+
+                        //uow.AnimalBasicInfos.SetAsUnchanged(basicInfo);
+                        //uow.Animals.SetAsUnchanged(appointmentAnimal);
+                        //uow.AnimalBasicInfos.SetAsUnchanged(animalBasicInfo);
+                    }
+                    
+
+                    
+
+                    //var appointCustomer = uow.Appointments.Get(appointment.Id).AppointedCustomer;
+                    //var appointAnimal = uow.Appointments.Get(appointment.Id).AppointedAnimal;
+                    //uow.Customers.Add(appointmentCustomer);
+                    //uow.Animals.Add(appointmentAnimal);
+                    uow.Appointments.Add(appointment);
+                    //var medicineToAdd = uow.Medicines.Get(medicine.Id);
+                    //animalBasicInfo.AvailableMedicines.Add(medicineToAdd);
+                    //medicineToAdd.AssignedAnimals.Add(animalBasicInfo);
+
+                    uow.Save();
+                }
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                //saveFailed = true;
+
+                // Update original values from the database
+                var entry = ex.Entries.Single();
+                entry.OriginalValues.SetValues(entry.GetDatabaseValues());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.StackTrace);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.InnerException);
+                Debug.WriteLine("==================");
+            }
+           
+
+            RaisePropertyChanged(() => Appointments);
+            RaisePropertyChanged(() => Customers);
+            RaisePropertyChanged(() => TreatedAnimals);
+
+            // null values 
+            CustomerToAddFirstName = null;
+            CustomerToAddLastName = null;
+            CustomerToAddCity = null;
+            CustomerToAddPostalCode = null;
+            CustomerToAddStreet = null;
+            CustomerToAddHouseNumber = 0;
+            CustomerToAddContact = null;
+
+            AnimalToAddName = null;
+            AnimalToAddGender = Gender.Female;
+
+            SelectedCustomerInAppointmentTab = null;
+            SelectedAnimalInAppointmentTab = null;
+
+            AppointmentDate = DateTime.Now;
+            AppointmentDescription = null;
+            AppointmentPurposeOfVisit = PurposeOfVisit.FirstVisit;
+        }
+
         private async Task RemoveSelectedCustomerAsync()
         {
             await Task.Run(() =>
@@ -644,6 +1006,8 @@ namespace VetManagementApp.ViewModel
                     if (SelectedCustomer == null)
                         return;
 
+                    unitOfWork.Animals.Delete(a => a.Owner.Id == SelectedCustomer.Id);
+                    unitOfWork.Appointments.Delete(a => a.AppointedCustomer.Id == SelectedCustomer.Id);
                     unitOfWork.Customers.Delete(SelectedCustomer.Id);
 
                     unitOfWork.Save();
@@ -659,9 +1023,19 @@ namespace VetManagementApp.ViewModel
 
         private async Task RemoveAllCustomersAsync()
         {
+
             using (var uow = new UnitOfWork())
             {
-                uow.Customers.DeleteAll();
+                //uow.Customers.DeleteAll();
+
+                var customers = uow.Customers.GetAll();
+
+                foreach(var customer in customers)
+                {
+                    uow.Animals.Delete(a => a.Owner.Id == customer.Id);
+                    uow.Appointments.Delete(a => a.AppointedCustomer.Id == customer.Id);
+                    uow.Customers.Delete(customer.Id);
+                }
 
                 uow.Save();
             }
@@ -672,118 +1046,69 @@ namespace VetManagementApp.ViewModel
             RaisePropertyChanged(() => TreatedAnimals);
         }
 
+        private async Task RemoveSelectedAppointmentAsync()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+
+                    using (var unitOfWork = new UnitOfWork())
+                    {
+                        if (SelectedAppointment == null)
+                            return;
+
+                        var appointmentCustomer = unitOfWork.Customers.Get(SelectedAppointment.AppointedCustomer.Id);
+                        appointmentCustomer.Appointments.Remove(SelectedAppointment);
+
+                        var appointmentAnimal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
+
+                        appointmentAnimal.Appointments.Remove(SelectedAppointment);
+
+                        unitOfWork.Appointments.Delete(SelectedAppointment.Id);
+
+                        //unitOfWork.AnimalBasicInfos.Delete(SelectedAnimalBasicInfo.Species);
+
+                        unitOfWork.Save();
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine("==================");
+                    Debug.WriteLine(ex.Message);
+                    Debug.WriteLine("==================");
+                    Debug.WriteLine(ex.StackTrace);
+                    Debug.WriteLine("==================");
+                    Debug.WriteLine(ex.InnerException);
+                    Debug.WriteLine("==================");
+
+                    MessageBox.Show("You cannot delete this type because it is assigned to treated animal.");
+
+                }
+            });
+
+            SelectedAppointment = null;
+            RaisePropertyChanged(() => Appointments);
+        }
+
         private async Task ShowPrefillingDatabaseWindowAsync()
         {
             if (!IsWindowOpen<Window>("PreliminaryDatabaseFillingWindow"))
             {
                 PreliminaryDatabaseFillingWindow preliminaryDatabaseFillingWindow = new PreliminaryDatabaseFillingWindow();
                 preliminaryDatabaseFillingWindow.Owner = System.Windows.Application.Current.MainWindow;
-                preliminaryDatabaseFillingWindow.Show();
+                preliminaryDatabaseFillingWindow.ShowDialog();
                 preliminaryDatabaseFillingWindow.Name = "PreliminaryDatabaseFillingWindow";
             }
         }
         #endregion
 
 
-
-
-
-
-
-
-
-        private ICommand _addNewCustomerAsyncCommand;
-
-        public ICommand AddNewCustomerAsyncCommand
-        {
-            get => _addNewCustomerAsyncCommand ?? new RelayCommand(() => AddNewCustomer());
-        }
-
-        public void AddNewCustomer()
-        {
-            using (var unitOfWork = new UnitOfWork())
-            {
-                Customer customer = new Customer();
-                customer.Id = 1;
-                customer.FirstName = "George";
-                customer.LastName = "Bake";
-                customer.OwnedAnimals = null;
-                customer.Appointments = null;
-                //customer.Address = "USA";
-                customer.Contact = "55555444";
-                unitOfWork.Customers.Add(customer);
-                //var c = unitOfWork.Customers.All;
-                //this.Customers.Add(customer);
-                unitOfWork.Save();
-
-                RaisePropertyChanged(() => Customers);
-            }
-        }
-
-
-
-        public void ShowAnimals()
-        {
-            using(var context = new VetManagementAppDbContext())
-            {
-                var animals = context.Animals.ToList();
-                //Customers = context.Customers.Local;
-            }
-
-        }
-
-        public void ShowCustomers()
-        {
-            using(var unitOfWork = new UnitOfWork())
-            {
-                unitOfWork.Customers.Add(new Customer());
-                unitOfWork.Customers.Delete(0);
-
-                unitOfWork.Save();
-            }
-        }
-
-        public void AddCustomer()
-        {
-            using (var unitOfWork = new UnitOfWork())
-            {
-                Customer customer = new Customer();
-                customer.Id = 1;
-                customer.FirstName = "Steve";
-                customer.LastName = "Jobs";
-                customer.OwnedAnimals = null;
-                customer.Appointments = null;
-                //customer.Address = "USA";
-                customer.Contact = "55555444";
-                unitOfWork.Customers.Add(customer);
-                //unitOfWork.Customers.Delete(0);
-
-                unitOfWork.Save();
-            }
-        }
-
-        public void AddCustomer2(string name)
-        {
-            using (var unitOfWork = new UnitOfWork())
-            {
-                Customer customer = new Customer();
-                customer.Id = 1;
-                customer.FirstName = "Stevenws";
-                customer.LastName = name;
-                customer.OwnedAnimals = null;
-                customer.Appointments = null;
-                //customer.Address = "USA";
-                customer.Contact = "55555444";
-                unitOfWork.Customers.Add(customer);
-                //var c = unitOfWork.Customers.All;
-                //this.Customers.Add(customer);
-                unitOfWork.Save();
-            }
-        }
-
         public MainViewModel()
         {
- 
+
         }
 
 

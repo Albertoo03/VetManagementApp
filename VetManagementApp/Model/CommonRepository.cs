@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects.DataClasses;
 using System.Data.Entity.Migrations;
@@ -48,6 +49,14 @@ namespace VetManagementApp.Model
             //}
         }
 
+        public void Delete(Expression<Func<T, bool>> predicate)
+        {
+            var itemsToRemove = _dbSet.Where(predicate);
+
+            _dbSet.RemoveRange(itemsToRemove);
+
+        }
+
         public virtual ICollection<T> GetAll()
         {
             return _dbSet.ToList();
@@ -66,11 +75,21 @@ namespace VetManagementApp.Model
 
         public bool DeleteAll()
         {
-            _dbSet.RemoveRange(_dbSet.ToList());
+            _dbSet.RemoveRange(_dbSet.AsEnumerable());
 
             return (_dbSet.Count() == 0) ? true : false;
         }
 
+        public void SetAsUnchanged(T entity)
+        {
+            //_dbContext.Entry(entity).State = EntityState.Unchanged;
+            _dbSet.Attach(entity);
+        }
+
+        public void SetAsAdded(T entity)
+        {
+            _dbContext.Entry(entity).State = EntityState.Added;
+        }
         //public void Update(T entity)
         //{
         //    _dbSet.Attach(entity);

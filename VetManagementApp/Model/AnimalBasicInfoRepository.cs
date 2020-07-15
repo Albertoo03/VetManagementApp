@@ -24,7 +24,7 @@ namespace VetManagementApp.Model
         {
             get
             {
-                _vetDbContext.AnimalsBasicInfos.Include(p => p.AvailableMedicines).Load();
+                _vetDbContext.AnimalsBasicInfos.Include(p => p.AvailableMedicines).Include(p => p.AssignedAnimals).Load();
 
                 var queryResult = _vetDbContext.AnimalsBasicInfos.Local;
 
@@ -35,6 +35,13 @@ namespace VetManagementApp.Model
         public void Delete(string species)
         {
             _vetDbContext.AnimalsBasicInfos.Remove(_vetDbContext.AnimalsBasicInfos.Where(animal => animal.Species == species).FirstOrDefault());
+        }
+
+        public AnimalBasicInfo GetBySpecies(string species)
+        {
+            var queryResult = _vetDbContext.AnimalsBasicInfos.Where(animal => animal.Species.Equals(species)).FirstOrDefault();
+
+            return queryResult;
         }
 
         //public override void Add(AnimalBasicInfo entity)

@@ -23,7 +23,7 @@ namespace VetManagementApp.Model
 
         public string City { get; set; }
         public string Street { get; set; }
-        public uint HouseNumber { get; set; }
+        public int HouseNumber { get; set; }
         public string PostalCode { get; set; }
 
         public string Address

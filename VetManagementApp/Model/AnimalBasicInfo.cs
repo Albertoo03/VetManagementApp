@@ -10,10 +10,17 @@ namespace VetManagementApp.Model
 {
     public class AnimalBasicInfo
     {
+        public AnimalBasicInfo()
+        {
+            this.AvailableMedicines = new HashSet<Medicine>();
+            this.AssignedAnimals = new HashSet<Animal>();
+        }
+
         [Key]
         public string Species { get; set; }
 
         public AnimalGroup Group { get; set; }
         public virtual ICollection<Medicine> AvailableMedicines { get; set; }
+        public virtual ICollection<Animal> AssignedAnimals { get; set; }
     }
 }

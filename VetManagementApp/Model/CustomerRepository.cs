@@ -34,12 +34,7 @@ namespace VetManagementApp.Model
             //}
         }
 
-        public IEnumerable<Appointment> GetPastAppointments(Customer customer)
-        {
-            var queryResult = _vetDbContext.Appointments.Where(app => app.AppointedCustomer == customer && app.Date < DateTime.Now.Date).ToList();
-            
-            return queryResult;
-        }
+
 
         public IEnumerable<Animal> GetTreatedAnimals(Customer customer)
         {
@@ -48,12 +43,26 @@ namespace VetManagementApp.Model
             return queryResult;
         }
 
+        public ICollection<Appointment> GetAppointments(Customer customer)
+        {
+            //var listOfAppointmentss = _vetDbContext.Customers.Where(cust => cust.Id == customer.Id).Include(p => p.Appointments).ToList();
+
+            //_vetDbContext.Appointments.Where(cust => cust.AppointedCustomer.Id == customer.Id).Load();
+
+            var listOfAppointments = _vetDbContext.Appointments.Where(cust => cust.AppointedCustomer.Id == customer.Id).ToList();
+            //var queryResult = _vetDbContext.Customers.Local;
+            
+            return listOfAppointments;
+        }
+
+
         public override ICollection<Customer> All
         {
             get
             {
-                _vetDbContext.Customers.Include(p => p.Appointments).Include(p => p.OwnedAnimals).Load();
+                _vetDbContext.Customers.Include(p => p.Appointments).Include(p => p.OwnedAnimals.Select(animal => animal.SpeciesInfo)).Load();
 
+                //_vetDbContext.Entry()
                 var queryResult = _vetDbContext.Customers.Local;
 
                 return queryResult;

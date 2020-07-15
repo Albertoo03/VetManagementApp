@@ -14,6 +14,12 @@ namespace VetManagementApp.Model
 
     public class Animal
     {
+        public Animal()
+        {
+            this.Appointments = new HashSet<Appointment>();
+            this.AssignedMedicines = new HashSet<Medicine>();
+        }
+
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }

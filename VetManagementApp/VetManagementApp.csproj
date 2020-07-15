@@ -85,10 +85,27 @@
     <Compile Include="Migrations\202007130933485_AddedCollectionsOfAnimalsToMedicineTable.designer.cs">
       <DependentUpon>202007130933485_AddedCollectionsOfAnimalsToMedicineTable.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202007150555210_AnimalBasicInfoUpdatedWithAssignedAnimals.cs" />
+    <Compile Include="Migrations\202007150555210_AnimalBasicInfoUpdatedWithAssignedAnimals.designer.cs">
+      <DependentUpon>202007150555210_AnimalBasicInfoUpdatedWithAssignedAnimals.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007150858073_LazyToEagerLoading.cs" />
+    <Compile Include="Migrations\202007150858073_LazyToEagerLoading.designer.cs">
+      <DependentUpon>202007150858073_LazyToEagerLoading.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007150928049_AnimalConstructorTest.cs" />
+    <Compile Include="Migrations\202007150928049_AnimalConstructorTest.designer.cs">
+      <DependentUpon>202007150928049_AnimalConstructorTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202007151322178_ChangeTypeOfHouseNumber.cs" />
+    <Compile Include="Migrations\202007151322178_ChangeTypeOfHouseNumber.designer.cs">
+      <DependentUpon>202007151322178_ChangeTypeOfHouseNumber.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\AnimalBasicInfo.cs" />
     <Compile Include="Model\AnimalBasicInfoRepository.cs" />
     <Compile Include="Model\AnimalRepository.cs" />
+    <Compile Include="Model\AppointmentRepository.cs" />
     <Compile Include="View\PreliminaryDatabaseFillingWindow.xaml.cs">
       <DependentUpon>PreliminaryDatabaseFillingWindow.xaml</DependentUpon>
     </Compile>
@@ -155,6 +172,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202007130933485_AddedCollectionsOfAnimalsToMedicineTable.resx">
       <DependentUpon>202007130933485_AddedCollectionsOfAnimalsToMedicineTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007150555210_AnimalBasicInfoUpdatedWithAssignedAnimals.resx">
+      <DependentUpon>202007150555210_AnimalBasicInfoUpdatedWithAssignedAnimals.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007150858073_LazyToEagerLoading.resx">
+      <DependentUpon>202007150858073_LazyToEagerLoading.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007150928049_AnimalConstructorTest.resx">
+      <DependentUpon>202007150928049_AnimalConstructorTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007151322178_ChangeTypeOfHouseNumber.resx">
+      <DependentUpon>202007151322178_ChangeTypeOfHouseNumber.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

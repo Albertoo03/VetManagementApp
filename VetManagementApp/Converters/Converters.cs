@@ -48,7 +48,7 @@ namespace VetManagementApp.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return Binding.DoNothing;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -58,4 +58,28 @@ namespace VetManagementApp.Converters
             return (isMaleChecked == true) ? Gender.Male : Gender.Female;
         }
     }
+
+    //public class MakeAppointmentConditionsMultiConverter : IMultiValueConverter
+    //{
+    //    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        bool conditionsMet = true;
+
+    //        var appointmentCustomer = (Customer)values[0];
+    //        var appointmentAnimal = (Animal)values[1];
+    //        var appointmentDate = (DateTime)values[2];
+    //        var appointmentDescription = (string)values[3];
+
+    //        if (appointmentCustomer == null || appointmentAnimal == null || appointmentDate == null || appointmentDescription == null)
+    //            conditionsMet = false;
+            
+
+    //        return conditionsMet;
+    //    }
+
+    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    //    {
+    //        throw new NotImplementedException();
+    //    }
+    //}
 }
