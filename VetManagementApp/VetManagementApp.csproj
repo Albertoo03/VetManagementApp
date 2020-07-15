@@ -101,14 +101,23 @@
     <Compile Include="Migrations\202007151322178_ChangeTypeOfHouseNumber.designer.cs">
       <DependentUpon>202007151322178_ChangeTypeOfHouseNumber.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202007151708476_AddedStateOfVisitToAppointmentTable.cs" />
+    <Compile Include="Migrations\202007151708476_AddedStateOfVisitToAppointmentTable.designer.cs">
+      <DependentUpon>202007151708476_AddedStateOfVisitToAppointmentTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\AnimalBasicInfo.cs" />
     <Compile Include="Model\AnimalBasicInfoRepository.cs" />
     <Compile Include="Model\AnimalRepository.cs" />
     <Compile Include="Model\AppointmentRepository.cs" />
+    <Compile Include="Validators\Validators.cs" />
     <Compile Include="View\PreliminaryDatabaseFillingWindow.xaml.cs">
       <DependentUpon>PreliminaryDatabaseFillingWindow.xaml</DependentUpon>
     </Compile>
+    <Page Include="ResourceDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -184,6 +193,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202007151322178_ChangeTypeOfHouseNumber.resx">
       <DependentUpon>202007151322178_ChangeTypeOfHouseNumber.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007151708476_AddedStateOfVisitToAppointmentTable.resx">
+      <DependentUpon>202007151708476_AddedStateOfVisitToAppointmentTable.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

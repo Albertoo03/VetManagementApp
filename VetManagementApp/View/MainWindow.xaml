@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:VetManagementApp"
         xmlns:localview="clr-namespace:VetManagementApp.View"
         xmlns:vm="clr-namespace:VetManagementApp.ViewModel"
+        xmlns:val="clr-namespace:VetManagementApp.Validators"
         xmlns:conv="clr-namespace:VetManagementApp.Converters"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         mc:Ignorable="d"
@@ -17,7 +18,6 @@
         <conv:SelectedCustomerConverter x:Key="SelectedCustomerConverter"/>
         <conv:IsObjectNullToBooleanConverter x:Key="IsObjectNullToBooleanConverter"/>
         <conv:GenderSelectionConverter x:Key="GenderSelectionConverter"/>
-        <conv:MakeAppointmentConditionsMultiConverter x:Key="MakeAppointmentConditionsMultiConverter"/>
     </Window.Resources>
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Height="30">
@@ -47,6 +47,19 @@
                                     <DataTrigger Binding="{Binding ElementName=RemoveSelectedCustomer, Path=IsMouseOver}" Value="True">
                                         <Setter Property="Text" Value="Removes selected customer from database"/>
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=RemoveAllCustomers, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Removes all customers from database"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=CustomersDataGrid, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Select any of customers to enable some actions."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=ShowOwnedAnimals, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Shows animals owned by selected customer."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=ShowAppointmentsHistory, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Shows appointments of selected customer."/>
+                                    </DataTrigger>
+
                                 </Style.Triggers>
                             </Style>
                         </TextBlock.Style>
@@ -133,7 +146,15 @@
                                                     <Label Content="Postal code: " Grid.Row="1" Grid.Column="0"/>
                                                     <TextBox Margin= "0 2 0 2"  Text="{Binding CustomerToAddPostalCode, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Grid.Row="1" Grid.Column="1"/>
                                                     <Label Content="House nr: " Grid.Row="2" Grid.Column="0"/>
-                                                    <TextBox Margin= "0 2 0 2"  Text="{Binding CustomerToAddHouseNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Grid.Row="2" Grid.Column="1"/>
+                                                    <TextBox x:Name="HouseNumberTextBox" Margin= "0 2 0 2" Grid.Row="2" Grid.Column="1" Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
+                                                        <TextBox.Text>
+                                                            <Binding Path="CustomerToAddHouseNumber" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                                                <Binding.ValidationRules>
+                                                                    <val:HouseNumberValidator/>
+                                                                </Binding.ValidationRules>
+                                                            </Binding>
+                                                        </TextBox.Text>
+                                                    </TextBox>
                                                 </Grid>
                                             </StackPanel>
                                         </StackPanel>
@@ -228,17 +249,26 @@
                                                             </Style.Triggers>
                                                         </Style>
                                                     </StackPanel.Style>
-                                                    <ListBox ItemsSource="{Binding SelectedCustomerInAppointmentTab.OwnedAnimals, Mode=OneWay}" SelectedItem="{Binding SelectedAnimalInAppointmentTab, Mode=TwoWay}" Margin="0 10 0 0" Height="130">
-                                                        <ListBox.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="{Binding Name, Mode=OneWay}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text=",    " FontSize="12" TextAlignment="Left" TextWrapping="Wrap"/>
-                                                                    <TextBlock Text="{Binding SpeciesInfo.Species, Mode=OneWay}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap"/>
-                                                                </StackPanel>
-                                                            </DataTemplate>
-                                                        </ListBox.ItemTemplate>
-                                                    </ListBox>
+                                                    <ListView ItemsSource="{Binding SelectedCustomerInAppointmentTab.OwnedAnimals, Mode=OneWay}" SelectedItem="{Binding SelectedAnimalInAppointmentTab, Mode=TwoWay}" Margin="0 10 0 0" Height="130">
+                                                        <ListView.View>
+                                                            <GridView AllowsColumnReorder="False">
+                                                                <GridViewColumn Header="Name" Width="100">
+                                                                    <GridViewColumn.CellTemplate>
+                                                                        <DataTemplate>
+                                                                            <TextBlock Text="{Binding Name, Mode=OneWay}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap"/>
+                                                                        </DataTemplate>
+                                                                    </GridViewColumn.CellTemplate>
+                                                                </GridViewColumn>
+                                                                <GridViewColumn Header="Species" Width="100">
+                                                                    <GridViewColumn.CellTemplate>
+                                                                        <DataTemplate>
+                                                                            <TextBlock Text="{Binding SpeciesInfo.Species, Mode=OneWay}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap"/>
+                                                                        </DataTemplate>
+                                                                    </GridViewColumn.CellTemplate>
+                                                                </GridViewColumn>
+                                                            </GridView>
+                                                        </ListView.View>
+                                                    </ListView>
                                                     <!--<ComboBox x:Name="AppointmentAnimalsComboBox" Margin="0 2 0 2" ItemsSource="{Binding SelectedCustomerInAppointmentTab.OwnedAnimals}" IsEditable="True" Grid.Row="0" Grid.Column="1" Width="150">
                                                         <ComboBox.ItemTemplate>
                                                             <DataTemplate>
@@ -274,32 +304,109 @@
                                         </StackPanel>
                                     </GroupBox>
                                 </StackPanel>
-                                <Button Content="Make an appointment" Command="{Binding MakeAnAppointmentAsyncCommand}" Width="150" Height="30" Margin="0 20 0 0" IsEnabled="True"/>
+                                <Button Content="Make an appointment" Command="{Binding MakeAnAppointmentAsyncCommand}" Width="150" Height="30" Margin="0 20 0 0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="IsEnabled" Value="True"/>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Path=(Validation.HasError), ElementName=HouseNumberTextBox}" Value="True"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                             </StackPanel>
                              
                         </TabItem>
                         <TabItem x:Name="ManageAppointmentsTab" Header="Manage appointments">
                             <DockPanel Margin="10">
-                                <DockPanel DockPanel.Dock="Left">
-                                    <DataGrid ItemsSource="{Binding Appointments}" Width="470" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedAppointment, Mode=OneWayToSource}">
-                                        <DataGrid.Columns >
-                                            <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
-                                            <DataGridTextColumn Header="Customer" Binding="{Binding AppointedCustomer}" Width="140"/>
-                                            <DataGridTextColumn Header="Animal" Binding="{Binding AppointedAnimal}" Width="110"/>
-                                            <DataGridTextColumn Header="Purpose of visit" Binding="{Binding PurposeOfVisit}" Width="100"/>
-                                            <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="90"/>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </DockPanel>
-                                <DockPanel>
-                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20 0 20 0">
-                                        <Button Command="{Binding RemoveSelectedAppointmentAsyncCommand, Mode=OneWay}" Margin="0 0 0 10">
+                                <DockPanel DockPanel.Dock="Top" Height="300">
+                                    <DockPanel DockPanel.Dock="Left">
+                                        <DataGrid ItemsSource="{Binding Appointments}" Width="480" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedAppointment, Mode=OneWayToSource}">
+                                            <DataGrid.Columns >
+                                                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
+                                                <DataGridTextColumn Header="Customer" Binding="{Binding AppointedCustomer}" Width="140"/>
+                                                <DataGridTextColumn Header="Animal" Binding="{Binding AppointedAnimal}" Width="110"/>
+                                                <DataGridTextColumn Header="Purpose of visit" Binding="{Binding PurposeOfVisit}" Width="100"/>
+                                                <DataGridTextColumn Header="Date" Binding="{Binding Date.Date}" Width="90"/>
+                                                <DataGridTextColumn Header="State" Binding="{Binding StateOfVisit}" Width="100"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </DockPanel>
+                                    <DockPanel>
+                                        <Button Command="{Binding RemoveSelectedAppointmentAsyncCommand, Mode=OneWay}" Margin="0 0 0 10" HorizontalAlignment="Center" Width="120" Height="40">
                                             <TextBlock Text="Remove selected appointment" TextAlignment="Center" TextWrapping="Wrap"/>
                                         </Button>
-                                        <Button Command="{Binding EditSelectedAppointmentAsyncCommand, Mode=OneWay}">
-                                            <TextBlock Text="Edit selected appointment" TextAlignment="Center" TextWrapping="Wrap"/>
-                                        </Button>
-                                    </StackPanel>
+                                    </DockPanel>
+                                </DockPanel>
+                                <DockPanel Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DockPanel},AncestorLevel=1}}">
+                                    <GroupBox Header="Appointment management" Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DockPanel},AncestorLevel=1}}">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Width="550" Height="200">
+                                            <StackPanel Orientation="Horizontal" Height="130" Margin="0 30 0 10">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Label Content="Status: "/>
+                                                    <ComboBox ItemsSource="{Binding Source={StaticResource enumStateOfVisit}}" Width="120"/>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 0 0" Height="140">
+                                                    <Label Content="Available medicines: "/>
+                                                    <ListView x:Name="AvailableMedicines" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.SpeciesInfo.AvailableMedicines}" ToolTip="Hold CTRL pressed while mouse click to select multpile medicines." Height="100" SelectionMode="Single">
+                                                        <!--<ListView.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock x:Name="ItemTemp" Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap">
+                                                                    <TextBlock.InputBindings>
+                                                                        <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.LeftMouseDoubleClickAsyncCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=AvailableMedicines, Path=SelectedItem}"/>
+                                                                    </TextBlock.InputBindings>
+                                                                </TextBlock>
+                                                            </DataTemplate>
+                                                        </ListView.ItemTemplate>-->
+                                                        <ListView.View>
+                                                            <GridView AllowsColumnReorder="False">
+                                                                <GridViewColumn Header="Name" Width="145" >
+                                                                    <GridViewColumn.CellTemplate>
+                                                                        <DataTemplate>
+                                                                            <TextBlock Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap">
+                                                                                <TextBlock.InputBindings>
+                                                                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.LeftMouseDoubleClickOnAvailableMedicinesAsyncCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=AvailableMedicines, Path=SelectedItem}"/>
+                                                                                </TextBlock.InputBindings>
+                                                                            </TextBlock>
+                                                                        </DataTemplate>
+                                                                    </GridViewColumn.CellTemplate>
+                                                                </GridViewColumn>
+                                                            </GridView>
+                                                        </ListView.View>
+                                                        
+                                                    </ListView>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 0 0" Height="140">
+                                                    <Label Content="Assigned medicines: "/>
+                                                    <ListView x:Name="AssignedMedicines" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.AssignedMedicines}" ToolTip="Hold CTRL pressed while mouse click to select multpile medicines." Height="100">
+                                                        <ListView.View>
+                                                            <GridView AllowsColumnReorder="False">
+                                                                <GridViewColumn Header="Name" Width="145" >
+                                                                    <GridViewColumn.CellTemplate>
+                                                                        <DataTemplate>
+                                                                            <TextBlock Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap">
+                                                                                <TextBlock.InputBindings>
+                                                                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.LeftMouseDoubleClickOnAssignedMedicinesAsyncCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=AssignedMedicines, Path=SelectedItem}"/>
+                                                                                </TextBlock.InputBindings>
+                                                                            </TextBlock>
+                                                                        </DataTemplate>
+                                                                    </GridViewColumn.CellTemplate>
+                                                                </GridViewColumn>
+                                                            </GridView>
+                                                        </ListView.View>
+                                                    </ListView>
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <Button Command="{Binding SaveChangesOnAppointmentAsyncCommand}" Content="SaveChanges" Width="120" Height="30"/>
+                                        </StackPanel>
+                                       
+                                    </GroupBox>
+                                    
                                 </DockPanel>
                             </DockPanel>
                         </TabItem>
@@ -310,11 +417,11 @@
                         <DockPanel DockPanel.Dock="Bottom" Height="100">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Button x:Name="RemoveSelectedCustomer" Command="{Binding RemoveSelectedCustomerAsyncCommand}" Content="Remove selected customer" Margin="0 0 30 0" Width="150" Height="40" IsEnabled="{Binding SelectedCustomer, Converter={StaticResource IsObjectNullToBooleanConverter}}"/>
-                                <Button Content="Remove all customers" Command="{Binding RemoveAllCustomersAsyncCommand}" IsEnabled="{Binding SelectedCustomer, Converter={StaticResource IsObjectNullToBooleanConverter}}"/>
+                                <Button x:Name="RemoveAllCustomers" Content="Remove all customers" Command="{Binding RemoveAllCustomersAsyncCommand}"/>
                             </StackPanel>
                         </DockPanel>
                         <DockPanel>
-                            <DataGrid ItemsSource="{Binding Customers}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedCustomer, Mode=OneWayToSource}" SelectionMode="Single" SelectionUnit="FullRow">
+                            <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedCustomer, Mode=OneWayToSource}" SelectionMode="Single" SelectionUnit="FullRow">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                                     <DataGridTextColumn Header="First name" Binding="{Binding FirstName}" Width="80"/>
@@ -394,12 +501,36 @@
                     <GroupBox Header="Actions" Padding="10">
                         <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
-                                <Button Margin="0 0 20 0" Width="100" Height="40">
+                                <RadioButton GroupName="AppointmentAction" Margin="0 0 20 0" Width="100" Height="40">
                                     <TextBlock Text="Show only past appointments" TextAlignment="Center" TextWrapping="Wrap"/>
-                                </Button>
-                                <Button Width="120" Height="40">
+                                    <RadioButton.Style>
+                                        <Style TargetType="{x:Type RadioButton}">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate>
+                                                        <ToggleButton Content="{Binding Path=Content, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RadioButton}}}"
+                              IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RadioButton}}}"/>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </RadioButton.Style>
+                                </RadioButton>
+                                <RadioButton GroupName="AppointmentAction" Width="120" Height="40">
                                     <TextBlock Text="Show only coming appointments" TextAlignment="Center" TextWrapping="Wrap"/>
-                                </Button>
+                                    <RadioButton.Style>
+                                        <Style TargetType="{x:Type RadioButton}">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate>
+                                                        <ToggleButton Content="{Binding Path=Content, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RadioButton}}}"
+                              IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RadioButton}}}"/>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </RadioButton.Style>
+                                </RadioButton>
                             </StackPanel>
                         </StackPanel>
                     </GroupBox>

@@ -9,7 +9,7 @@ using static VetManagementApp.Interfaces.Interfaces;
 
 namespace VetManagementApp.Model
 {
-    class AppointmentRepository : CommonRepository<Appointment>, IAppointmentRepository
+    public class AppointmentRepository : CommonRepository<Appointment>, IAppointmentRepository
     {
         private readonly VetManagementAppDbContext _vetDbContext;
 
@@ -29,7 +29,7 @@ namespace VetManagementApp.Model
         {
             get
             {
-                _vetDbContext.Appointments.Include(appointment => appointment.AppointedAnimal.SpeciesInfo).Include(appointment => appointment.AppointedCustomer).Load();
+                _vetDbContext.Appointments.Include(appointment => appointment.AppointedCustomer).Include(app => app.AppointedAnimal.AssignedMedicines).Include(app => app.AppointedAnimal.SpeciesInfo.AvailableMedicines).Load();
 
                 var queryResult = _vetDbContext.Appointments.Local;
 

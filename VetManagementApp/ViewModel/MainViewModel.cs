@@ -506,6 +506,8 @@ namespace VetManagementApp.ViewModel
         private IAsyncCommand _removeAllCustomersAsyncCommand;
         private IAsyncCommand _makeAnAppointmentAsyncCommand;
         private IAsyncCommand _removeSelectedAppointmentAsyncCommand;
+        private IAsyncCommand<Medicine> _leftMouseDoubleClickOnAvailableMedicinesAsyncCommand;
+        private IAsyncCommand<Medicine> _leftMouseDoubleClickOnAssignedMedicinesAsyncCommand;
 
         public IAsyncCommand RemoveSelectedCustomerAsyncCommand
         {
@@ -517,7 +519,7 @@ namespace VetManagementApp.ViewModel
         }
         public IAsyncCommand<IList> AddNewAnimalAsyncCommand
         {
-            get => _addNewAnimalAsyncCommand ?? new AsyncCommand<IList>(AddNewAnimalAsync);
+            get => _addNewAnimalAsyncCommand ?? new AsyncCommand<IList>(AddNewAnimalBasicInfoAsync);
         }
         public IAsyncCommand AddNewMedicineAsyncCommand
         {
@@ -551,11 +553,18 @@ namespace VetManagementApp.ViewModel
         {
             get => _removeSelectedAppointmentAsyncCommand ?? new AsyncCommand(() => RemoveSelectedAppointmentAsync());
         }
+        public IAsyncCommand<Medicine> LeftMouseDoubleClickOnAvailableMedicinesAsyncCommand
+        {
+            get => _leftMouseDoubleClickOnAvailableMedicinesAsyncCommand ?? new AsyncCommand<Medicine>(LeftMouseDoubleOnAvailableMedicinesClickAsync);
+        }
+        public IAsyncCommand<Medicine> LeftMouseDoubleClickOnAssignedMedicinesAsyncCommand
+        {
+            get => _leftMouseDoubleClickOnAssignedMedicinesAsyncCommand ?? new AsyncCommand<Medicine>(LeftMouseDoubleOnAssignedMedicinesClickAsync);
+        }
+        
         #endregion
 
         #region Collections
-        // Collections 
-        private ObservableCollection<Customer> _customers;
 
         public ObservableCollection<Customer> Customers
         {
@@ -639,7 +648,7 @@ namespace VetManagementApp.ViewModel
 
         #region Command action tasks
 
-        private async Task AddNewAnimalAsync(IList selectedItems)
+        private async Task AddNewAnimalBasicInfoAsync(IList selectedItems)
         {
             
             AnimalBasicInfo animalBasicInfo = new AnimalBasicInfo();
@@ -649,19 +658,28 @@ namespace VetManagementApp.ViewModel
             animalBasicInfo.AvailableMedicines = new ObservableCollection<Medicine>();
             animalBasicInfo.AssignedAnimals = new ObservableCollection<Animal>();
 
-            using (var uow = new UnitOfWork())
+            try
             {
-                foreach (var medicine in selectedMedicinesList)
+                using (var uow = new UnitOfWork())
                 {
-                    var medicineToAdd = uow.Medicines.Get(medicine.Id);
-                    animalBasicInfo.AvailableMedicines.Add(medicineToAdd);
-                    medicineToAdd.AssignedAnimals.Add(animalBasicInfo);
+                    foreach (var medicine in selectedMedicinesList)
+                    {
+                        var medicineToAdd = uow.Medicines.Get(medicine.Id);
+                        animalBasicInfo.AvailableMedicines.Add(medicineToAdd);
+                        medicineToAdd.AssignedAnimals.Add(animalBasicInfo);
 
+                    }
+
+                    uow.AnimalBasicInfos.Add(animalBasicInfo);
+                    uow.Save();
                 }
-
-                uow.AnimalBasicInfos.Add(animalBasicInfo);
-                uow.Save();
             }
+            catch(Exception ex)
+            {
+                MessageBox.Show("There is already an animals with the same species in the database!");
+                return;
+            }
+
 
             RaisePropertyChanged(() => AnimalBasicInfos);
         }
@@ -675,6 +693,14 @@ namespace VetManagementApp.ViewModel
 
             using (var uow = new UnitOfWork())
             {
+                var medFromDb = uow.Medicines.GetByPredicate(med => med.Name == medicine.Name);
+
+                if(medFromDb != null)
+                {
+                    MessageBox.Show("There is already medicine with the same name in database!");
+                    return;
+                }
+
                 uow.Medicines.Add(medicine);
                 uow.Save();
             }
@@ -705,6 +731,8 @@ namespace VetManagementApp.ViewModel
                 Debug.WriteLine("==================");
                 Debug.WriteLine(ex.InnerException);
                 Debug.WriteLine("==================");
+
+                MessageBox.Show("You cannot delete all animals types because some of them are assigned to treated animal.");
             }
 
 
@@ -723,6 +751,7 @@ namespace VetManagementApp.ViewModel
 
             RaisePropertyChanged(() => Medicines);
             RaisePropertyChanged(() => AnimalBasicInfos);
+            RaisePropertyChanged(() => TreatedAnimals);
         }
 
         private async Task RemoveSelectedAnimalBasicInfoAsync()
@@ -787,40 +816,8 @@ namespace VetManagementApp.ViewModel
 
         private async Task MakeAnAppointmentAsync()
         {
-            bool customerConditionsMet = false;
-            bool animalConditionsMet = false;
-            bool appointmentInfoConditionsMet = false;
-            bool allConditionsMet = false;
 
-
-            if(AddNewCustomerIsChecked)
-            {
-                customerConditionsMet = NewCustomerAllFieldsFilled;
-                animalConditionsMet = NewAnimalAllFieldsFilled;
-            }
-
-            if(CustomerFromDatabaseIsChecked)
-            {
-
-                if (SelectedCustomerInAppointmentTab != null)
-                    customerConditionsMet = true;
-
-                if(AddNewAnimalIsChecked)
-                {
-                    animalConditionsMet = NewAnimalAllFieldsFilled;
-                }
-
-                if(AnimalFromDatabaseIsChecked)
-                {
-                    if (SelectedAnimalInAppointmentTab != null)
-                        animalConditionsMet = true;
-                }
-            }
-
-            appointmentInfoConditionsMet = AppointmentsInfoAllFieldsFilled;
-
-
-            allConditionsMet = (customerConditionsMet && animalConditionsMet && appointmentInfoConditionsMet) ? true : false;
+            bool allConditionsMet = await CheckIfAllConditionsToMakeAppointmentAreMet();
 
             if (allConditionsMet == false)
             {
@@ -883,7 +880,7 @@ namespace VetManagementApp.ViewModel
             appointment.Date = AppointmentDate;
             appointment.Description = AppointmentDescription;
             appointment.PurposeOfVisit = AppointmentPurposeOfVisit;
-
+            appointment.StateOfVisit = StateOfVisit.WaitingForVisit;
 
             try
             {
@@ -955,8 +952,6 @@ namespace VetManagementApp.ViewModel
             }
             catch (DbUpdateConcurrencyException ex)
             {
-                //saveFailed = true;
-
                 // Update original values from the database
                 var entry = ex.Entries.Single();
                 entry.OriginalValues.SetValues(entry.GetDatabaseValues());
@@ -997,6 +992,46 @@ namespace VetManagementApp.ViewModel
             AppointmentPurposeOfVisit = PurposeOfVisit.FirstVisit;
         }
 
+        private async Task<bool> CheckIfAllConditionsToMakeAppointmentAreMet()
+        {
+            bool customerConditionsMet = false;
+            bool animalConditionsMet = false;
+            bool appointmentInfoConditionsMet = false;
+            bool allConditionsMet = false;
+
+
+            if (AddNewCustomerIsChecked)
+            {
+                customerConditionsMet = NewCustomerAllFieldsFilled;
+                animalConditionsMet = NewAnimalAllFieldsFilled;
+            }
+
+            if (CustomerFromDatabaseIsChecked)
+            {
+
+                if (SelectedCustomerInAppointmentTab != null)
+                    customerConditionsMet = true;
+
+                if (AddNewAnimalIsChecked)
+                {
+                    animalConditionsMet = NewAnimalAllFieldsFilled;
+                }
+
+                if (AnimalFromDatabaseIsChecked)
+                {
+                    if (SelectedAnimalInAppointmentTab != null)
+                        animalConditionsMet = true;
+                }
+            }
+
+            appointmentInfoConditionsMet = AppointmentsInfoAllFieldsFilled;
+
+
+            allConditionsMet = (customerConditionsMet && animalConditionsMet && appointmentInfoConditionsMet) ? true : false;
+
+            return allConditionsMet;
+        }
+
         private async Task RemoveSelectedCustomerAsync()
         {
             await Task.Run(() =>
@@ -1026,7 +1061,6 @@ namespace VetManagementApp.ViewModel
 
             using (var uow = new UnitOfWork())
             {
-                //uow.Customers.DeleteAll();
 
                 var customers = uow.Customers.GetAll();
 
@@ -1067,8 +1101,6 @@ namespace VetManagementApp.ViewModel
 
                         unitOfWork.Appointments.Delete(SelectedAppointment.Id);
 
-                        //unitOfWork.AnimalBasicInfos.Delete(SelectedAnimalBasicInfo.Species);
-
                         unitOfWork.Save();
                     }
 
@@ -1101,6 +1133,79 @@ namespace VetManagementApp.ViewModel
                 preliminaryDatabaseFillingWindow.Owner = System.Windows.Application.Current.MainWindow;
                 preliminaryDatabaseFillingWindow.ShowDialog();
                 preliminaryDatabaseFillingWindow.Name = "PreliminaryDatabaseFillingWindow";
+            }
+        }
+
+        private async Task LeftMouseDoubleOnAvailableMedicinesClickAsync(Medicine selectedMedicine)
+        {
+            if (selectedMedicine == null)
+                return;
+
+            try
+            {
+                using (var unitOfWork = new UnitOfWork())
+                {
+                    var animal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
+                    var medicine = unitOfWork.Medicines.Get(selectedMedicine.Id);
+
+
+                    animal.AssignedMedicines.Add(medicine);
+
+                    unitOfWork.Save();
+                }
+
+                RaisePropertyChanged(() => Appointments);
+                RaisePropertyChanged(() => TreatedAnimals);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.StackTrace);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.InnerException);
+                Debug.WriteLine("==================");
+
+
+            }
+
+            
+        }
+
+        private async Task LeftMouseDoubleOnAssignedMedicinesClickAsync(Medicine selectedMedicine)
+        {
+
+            if (selectedMedicine == null)
+                return;
+
+            try
+            {
+                using (var unitOfWork = new UnitOfWork())
+                {
+                    var animal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
+                    var medicine = unitOfWork.Medicines.Get(selectedMedicine.Id);
+
+
+                    animal.AssignedMedicines.Remove(medicine);
+
+                    unitOfWork.Save();
+                }
+
+                RaisePropertyChanged(() => Appointments);
+                RaisePropertyChanged(() => TreatedAnimals);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.StackTrace);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.InnerException);
+                Debug.WriteLine("==================");
+
+
             }
         }
         #endregion

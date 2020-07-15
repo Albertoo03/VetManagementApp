@@ -30,7 +30,6 @@ namespace VetManagementApp.Model
         public UnitOfWork(VetManagementAppDbContext dbContext)
         {
             this._dbContext = dbContext;
-            //Customers = new CustomerRepository(_dbContext);
         }
 
         public ICustomerRepository Customers
