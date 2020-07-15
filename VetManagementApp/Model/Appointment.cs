@@ -18,5 +18,6 @@ namespace VetManagementApp.Model
         public DateTime Date { get; set; }
         public PurposeOfVisit PurposeOfVisit { get; set; }
 
+        public StateOfVisit StateOfVisit { get; set; }
     }
 }
