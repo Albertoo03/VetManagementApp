@@ -45,7 +45,11 @@ namespace VetManagementApp.Helpers
             Treatment,
         };
 
-
+        public enum StateOfVisit
+        {
+            WaitingForVisit,
+            VisitCompleted
+        };
 
         public enum DosageFrequency
         {
@@ -68,7 +72,7 @@ namespace VetManagementApp.Helpers
             //public en
         }
 
-
+        
 
         /// <summary>
         /// Checks if window of the name passed as an argument has not already been opened.
