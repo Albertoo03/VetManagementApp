@@ -73,6 +73,11 @@ namespace VetManagementApp.Model
             return _dbSet.Find(entityId);
         }
 
+        public virtual T GetByPredicate(Expression<Func<T, bool>> predicate)
+        {
+            return _dbSet.Where(predicate).FirstOrDefault();
+        }
+
         public bool DeleteAll()
         {
             _dbSet.RemoveRange(_dbSet.AsEnumerable());

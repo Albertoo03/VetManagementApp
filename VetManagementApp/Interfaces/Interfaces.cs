@@ -55,6 +55,7 @@ namespace VetManagementApp.Interfaces
             void Delete(Expression<Func<T, bool>> predicate);
             void SetAsUnchanged(T entity);
             void SetAsAdded(T entity);
+            T GetByPredicate(Expression<Func<T, bool>> predicate);
         }
 
         public interface IUnitOfWork
