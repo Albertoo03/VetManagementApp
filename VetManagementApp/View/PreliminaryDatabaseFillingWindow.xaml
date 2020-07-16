@@ -140,7 +140,7 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <DataGrid ItemsSource="{Binding AnimalBasicInfos}" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" CanUserResizeColumns="False" Height="400" SelectedItem="{Binding SelectedAnimalBasicInfo, Mode=OneWayToSource}" IsReadOnly="True">
+                        <DataGrid ItemsSource="{Binding AnimalBasicInfos}" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" CanUserResizeColumns="False" Height="400" SelectedItem="{Binding SelectedAnimalBasicInfo, Mode=TwoWay}" IsReadOnly="True">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Species" Binding="{Binding Species}" Width="100"/>
                                 <DataGridTextColumn Header="Group" Binding="{Binding Group}" Width="100"/>
@@ -166,7 +166,7 @@
                         </DataGrid>
                         <StackPanel Orientation="Horizontal" Margin="0 20 0 0" HorizontalAlignment="Center" Height="30">
                             <Button Content="Remove selected animal" Command="{Binding RemoveSelectedAnimalBasicInfoAsyncCommand}" ToolTip="Removes selected animal from database." Margin="0 0 10 0" IsEnabled="{Binding SelectedAnimalBasicInfo, Converter={StaticResource IsObjectNullToBooleanConverter}}"/>
-                            <Button Content="Remove all animals" Command="{Binding RemoveAllAnimalsAsyncCommand}" ToolTip="Removes all animals from database."/>
+                            <Button Content="Remove all animals" Command="{Binding RemoveAllAnimalBasicInfosAsyncCommand}" ToolTip="Removes all animals from database."/>
                         </StackPanel>
                     </StackPanel>
                     <StackPanel Orientation="Vertical" Margin="0 -500 0 0" Height="500">
@@ -180,7 +180,7 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <DataGrid ItemsSource="{Binding Medicines}" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" CanUserResizeColumns="False" Height="400" SelectedItem="{Binding SelectedMedicine, Mode=OneWayToSource}" IsReadOnly="True">
+                        <DataGrid ItemsSource="{Binding Medicines}" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" CanUserResizeColumns="False" Height="400" SelectedItem="{Binding SelectedMedicine, Mode=TwoWay}" IsReadOnly="True">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="40"/>
                                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="120"/>

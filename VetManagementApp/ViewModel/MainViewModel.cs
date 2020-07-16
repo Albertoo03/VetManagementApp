@@ -520,6 +520,7 @@ namespace VetManagementApp.ViewModel
             }
         }
 
+
         public Customer SelectedCustomer
         {
             get => _selectedCustomer;
@@ -676,7 +677,7 @@ namespace VetManagementApp.ViewModel
         private AsyncCommand _openLogsWindowAsyncCommand;
         private AsyncCommand<IList> _addNewAnimalAsyncCommand;
         private AsyncCommand _addNewMedicineAsyncCommand;
-        private AsyncCommand _removeAllAnimalsAsyncCommand;
+        private AsyncCommand _removeAllAnimalBasicInfosAsyncCommand;
         private AsyncCommand _removeAllMedicinesAsyncCommand;
         private AsyncCommand _removeSelectedAnimalBasicInfoAsyncCommand;
         private AsyncCommand _removeSelectedMedicineAsyncCommand;
@@ -686,6 +687,8 @@ namespace VetManagementApp.ViewModel
         private AsyncCommand<Medicine> _leftMouseDoubleClickOnAvailableMedicinesAsyncCommand;
         private AsyncCommand<Medicine> _leftMouseDoubleClickOnAssignedMedicinesAsyncCommand;
         private AsyncCommand _autoScrollLogsAsyncCommand;
+        private AsyncCommand _exitTheAppAsyncCommand;
+        private AsyncCommand _rightMouseClickAsyncCommand;
 
         public IAsyncCommand RemoveSelectedCustomerAsyncCommand
         {
@@ -707,9 +710,9 @@ namespace VetManagementApp.ViewModel
         {
             get => _addNewMedicineAsyncCommand ?? new AsyncCommand(() => AddNewMedicineAsync());
         }
-        public IAsyncCommand RemoveAllAnimalsAsyncCommand
+        public IAsyncCommand RemoveAllAnimalBasicInfosAsyncCommand
         {
-            get => _removeAllAnimalsAsyncCommand ?? new AsyncCommand(() => RemoveAllAnimalsAsync());
+            get => _removeAllAnimalBasicInfosAsyncCommand ?? new AsyncCommand(() => RemoveAllAnimalBasicInfosAsync());
         }
         public IAsyncCommand RemoveAllMedicinesAsyncCommand
         {
@@ -748,7 +751,17 @@ namespace VetManagementApp.ViewModel
             get =>_autoScrollLogsAsyncCommand ?? new AsyncCommand(() => AutoScrollLogsAsync());
             
         }
+        public IAsyncCommand ExitTheAppAsyncCommand
+        {
+            get => _exitTheAppAsyncCommand ?? new AsyncCommand(() => ExitTheAppAsync());
+        }
+        public IAsyncCommand RightMouseClickAsyncCommand
+        {
+            get => _rightMouseClickAsyncCommand ?? new AsyncCommand(() => RightMouseClickAsync());
+        }
+        
         #endregion
+
 
         #region Collections
         private ObservableCollection<Appointment> _appointments;
@@ -866,6 +879,7 @@ namespace VetManagementApp.ViewModel
 
 
             RaisePropertyChanged(() => AnimalBasicInfos);
+            SelectedAnimalBasicInfo = null;
         }
 
         private async Task AddNewMedicineAsync()
@@ -905,9 +919,10 @@ namespace VetManagementApp.ViewModel
             MedicineToAddManufacturer = "";
             MedicineToAddDose = "";
             MedicineToAddTargetAnimal = "";
+            SelectedMedicine = null;
         }
 
-        private async Task RemoveAllAnimalsAsync()
+        private async Task RemoveAllAnimalBasicInfosAsync()
         {
             try
             {
@@ -932,8 +947,8 @@ namespace VetManagementApp.ViewModel
             }
 
 
-            RaisePropertyChanged(() => AnimalBasicInfos);
             SelectedAnimalBasicInfo = null;
+            RaisePropertyChanged(() => AnimalBasicInfos);
         }
         
         private async Task RemoveAllMedicinesAsync()
@@ -1176,7 +1191,7 @@ namespace VetManagementApp.ViewModel
             CustomerToAddCity = null;
             CustomerToAddPostalCode = null;
             CustomerToAddStreet = null;
-            CustomerToAddHouseNumber = 0;
+            CustomerToAddHouseNumber = 1;
             CustomerToAddContact = null;
 
             AnimalToAddName = null;
@@ -1438,6 +1453,21 @@ namespace VetManagementApp.ViewModel
         {
             AutoScrollLogs = !AutoScrollLogs;
         }
+
+        /// <summary>
+        /// Shuts down an application.
+        /// </summary>
+        /// <returns></returns>
+        private async Task ExitTheAppAsync()
+        {
+            App.Current.Shutdown();
+        }
+
+        private async Task RightMouseClickAsync()
+        {
+            await SetNullToSelectableProperties();
+        }
+
         #endregion
 
         #region Event callbacks
@@ -1497,6 +1527,18 @@ namespace VetManagementApp.ViewModel
             LogsToShow = Logs.AppendFormat("> {0} :: {1} \n", dateTime.ToString(cultureInfo), log).ToString();
 
         }
+
+        private async Task SetNullToSelectableProperties()
+        {
+            SelectedAnimal = null;
+            SelectedAnimalBasicInfo = null;
+            SelectedAnimalInAppointmentTab = null;
+            SelectedAppointment = null;
+            SelectedMedicine = null;
+            SelectedCustomer = null;
+            SelectedCustomerInAppointmentTab = null;
+        }
+
         #endregion
         public MainViewModel()
         {

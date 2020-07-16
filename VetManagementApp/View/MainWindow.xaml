@@ -19,17 +19,24 @@
         <conv:GenderSelectionConverter x:Key="GenderSelectionConverter"/>
         <conv:IsAssignMedicinesEnabledMultiConverter x:Key="IsAssignMedicinesEnabledMultiConverter"/>
     </Window.Resources>
+    <Window.InputBindings>
+        <MouseBinding Gesture="RightClick" Command="{Binding RightMouseClickAsyncCommand}"/>
+    </Window.InputBindings>
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Height="30">
             <Menu DockPanel.Dock="Top" Margin="0 0 0 10">
-                <MenuItem Header="_File">
-                    <MenuItem Header="_Save database" IsEnabled="False"/>
-                    <MenuItem Header="_Read existing database" IsEnabled="False"/>
+                <MenuItem x:Name="FileMenuItem" Header="_File">
+                    <MenuItem Header="_Save database" IsEnabled="False" ToolTip="This feature will be added in full version." ToolTipService.ShowOnDisabled="True"/>
+                    <MenuItem Header="_Read existing database" IsEnabled="False" ToolTip="This feature will be added in full version." ToolTipService.ShowOnDisabled="True"/>
                     <Separator/>
                     <MenuItem Header="_Exit" IsEnabled="True" Command="{Binding ExitTheAppAsyncCommand}"/>
                 </MenuItem>
                 <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"/>
-                <MenuItem Header="_Open logs window" Command="{Binding OpenLogsWindowAsyncCommand}"/>
+                <MenuItem Header="_Orders" IsEnabled="False" ToolTip="This feature will be added in full version." ToolTipService.ShowOnDisabled="True"/>
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"/>
+                <MenuItem Header="_Invoices" IsEnabled="False" ToolTip="This feature will be added in full version." ToolTipService.ShowOnDisabled="True"/>
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"/>
+                <MenuItem x:Name="LogsWindowMenuItem" Header="_Open logs window" Command="{Binding OpenLogsWindowAsyncCommand}"/>
                 <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"/>
             </Menu>
         </DockPanel>
@@ -59,7 +66,22 @@
                                     <DataTrigger Binding="{Binding ElementName=ShowAppointmentsHistory, Path=IsMouseOver}" Value="True">
                                         <Setter Property="Text" Value="Shows appointments of selected customer."/>
                                     </DataTrigger>
-
+                                    <DataTrigger Binding="{Binding ElementName=AppointmentsTab, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Select to switch to appointment management window."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=CustomersTab, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Select to switch to customers management window."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=TreatedAnimalsTab, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Select to switch to treated animals management window."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=LogsWindowMenuItem, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Select to open logs window."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=FileMenuItem, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Select to show additional options."/>
+                                    </DataTrigger>
+                                    
                                 </Style.Triggers>
                             </Style>
                         </TextBlock.Style>
@@ -148,7 +170,7 @@
                                                     <Label Content="House nr: " Grid.Row="2" Grid.Column="0"/>
                                                     <TextBox x:Name="HouseNumberTextBox" Margin= "0 2 0 2" Grid.Row="2" Grid.Column="1" Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
                                                         <TextBox.Text>
-                                                            <Binding Path="CustomerToAddHouseNumber" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                                            <Binding Path="CustomerToAddHouseNumber" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" FallbackValue="1">
                                                                 <Binding.ValidationRules>
                                                                     <val:HouseNumberValidator/>
                                                                 </Binding.ValidationRules>
@@ -169,7 +191,7 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </StackPanel.Style>
-                                            <DataGrid ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedCustomerInAppointmentTab, Mode=OneWayToSource}" SelectionMode="Single" SelectionUnit="FullRow" Height="170" Margin="60 0 0 0">
+                                            <DataGrid ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedCustomerInAppointmentTab, Mode=TwoWay}" SelectionMode="Single" SelectionUnit="FullRow" Height="170" Margin="60 0 0 0">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Full name" Binding="{Binding FullName}" Width="120"/>
                                                     <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="120"/>
@@ -326,11 +348,11 @@
                             <DockPanel Margin="10">
                                 <DockPanel DockPanel.Dock="Top" Height="300">
                                     <DockPanel DockPanel.Dock="Left">
-                                        <DataGrid ItemsSource="{Binding FilteredAppointments}" Width="480" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedAppointment, Mode=OneWayToSource}">
+                                        <DataGrid ItemsSource="{Binding FilteredAppointments}" Width="480" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedAppointment, Mode=TwoWay}">
                                             <DataGrid.Columns >
                                                 <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
-                                                <DataGridTextColumn Header="Customer" Binding="{Binding AppointedCustomer}" Width="140"/>
-                                                <DataGridTextColumn Header="Animal" Binding="{Binding AppointedAnimal}" Width="110"/>
+                                                <DataGridTextColumn Header="Customer" Binding="{Binding AppointedCustomer}" Width="140" CanUserSort="False"/>
+                                                <DataGridTextColumn Header="Animal" Binding="{Binding AppointedAnimal}" Width="110" CanUserSort="False"/>
                                                 <DataGridTextColumn Header="Purpose of visit" Binding="{Binding PurposeOfVisit}" Width="100"/>
                                                 <DataGridTextColumn Header="Date" Binding="{Binding Date.Date}" Width="90"/>
                                                 <DataGridTextColumn Header="State" Binding="{Binding StateOfVisit}" Width="100"/>
@@ -426,7 +448,7 @@
                             </StackPanel>
                         </DockPanel>
                         <DockPanel>
-                            <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedCustomer, Mode=OneWayToSource}" SelectionMode="Single" SelectionUnit="FullRow">
+                            <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}" SelectionMode="Single" SelectionUnit="FullRow">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                                     <DataGridTextColumn Header="First name" Binding="{Binding FirstName}" Width="80"/>
@@ -444,7 +466,7 @@
                 </TabItem>
                 <TabItem x:Name="TreatedAnimalsTab" Header="Treated animals">
                     <DockPanel Margin="10">
-                        <DataGrid ItemsSource="{Binding TreatedAnimals}" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" Width="588" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedAnimal, Mode=OneWayToSource}">
+                        <DataGrid ItemsSource="{Binding TreatedAnimals}" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" Width="588" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedAnimal, Mode=TwoWay}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                                 <DataGridTextColumn Header="Species" Binding="{Binding SpeciesInfo.Species}" Width="100"/>
@@ -644,7 +666,7 @@
                         </Style>
                     </StackPanel.Style>
                     <CheckBox Content="Show only past appointments" Margin="0 0 0 10"/>
-                    <DataGrid ItemsSource="{Binding SelectedCustomer.Appointments}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" Height="300">
+                    <DataGrid ItemsSource="{Binding SelectedCustomer.Appointments}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" Height="300" IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Purpose of visit" Binding="{Binding PurposeOfVisit}" Width="100"/>
@@ -732,11 +754,11 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <DataGrid ItemsSource="{Binding SelectedAnimal.Appointments}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False">
+                    <DataGrid ItemsSource="{Binding SelectedAnimal.Appointments}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Purpose" Binding="{Binding PurposeOfVisit}" Width="70"/>
-                            <DataGridTextColumn Header="Owner" Binding="{Binding AppointedCustomer}" Width="100"/>
+                            <DataGridTextColumn Header="Owner" Binding="{Binding AppointedCustomer}" Width="100" CanUserSort="False"/>
                             <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="100"/>
                             <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="150"/>
                         </DataGrid.Columns>
@@ -753,7 +775,7 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <DataGrid ItemsSource="{Binding SelectedAnimal.AssignedMedicines}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False">
+                    <DataGrid ItemsSource="{Binding SelectedAnimal.AssignedMedicines}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="100"/>
@@ -773,7 +795,7 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <DataGrid ItemsSource="{Binding SelectedAnimal.SpeciesInfo.AvailableMedicines}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False">
+                    <DataGrid ItemsSource="{Binding SelectedAnimal.SpeciesInfo.AvailableMedicines}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="100"/>
@@ -782,11 +804,15 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
+                
             </StackPanel>
 
         </DockPanel>
+        
     </DockPanel>
     <!--<Grid>
         <TextBox Text="{Binding Path=TestText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="100" Height="40"/>
     </Grid>-->
+
+    
 </Window>
