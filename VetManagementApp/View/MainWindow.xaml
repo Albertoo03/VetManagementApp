@@ -652,7 +652,6 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <CheckBox Content="Show only treated animals" Margin="0 0 0 10"/>
                     <DataGrid ItemsSource="{Binding SelectedCustomer.OwnedAnimals}" Height="300" Style="{StaticResource DataGridStyle}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
@@ -674,7 +673,6 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <CheckBox Content="Show only past appointments" Margin="0 0 0 10"/>
                     <DataGrid ItemsSource="{Binding SelectedCustomer.Appointments}" Height="300" Style="{StaticResource DataGridStyle}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>

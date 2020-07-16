@@ -884,6 +884,8 @@ namespace VetManagementApp.ViewModel
 
 
             RaisePropertyChanged(() => AnimalBasicInfos);
+            RaisePropertyChanged(() => TreatedAnimals);
+            RaisePropertyChanged(() => Medicines);
             SelectedAnimalBasicInfo = null;
 
             if(animalBasicInfo != null)
@@ -912,7 +914,8 @@ namespace VetManagementApp.ViewModel
                 uow.Medicines.Add(medicine);
                 var animalToAssign = uow.AnimalBasicInfos.GetByPredicate(animal => animal.Species == medicine.TargetAnimal);
 
-                animalToAssign.AvailableMedicines.Add(medicine);
+                if (animalToAssign != null)
+                    animalToAssign.AvailableMedicines.Add(medicine);
 
                 Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
 
@@ -1146,6 +1149,7 @@ namespace VetManagementApp.ViewModel
             appointment.PurposeOfVisit = AppointmentPurposeOfVisit;
             appointment.StateOfVisit = StateOfVisit.WaitingForVisit;
 
+            ICollection<Appointment> appointments = null;
 
             try
             {
@@ -1194,14 +1198,15 @@ namespace VetManagementApp.ViewModel
                         var animalBasicInfo = uow.AnimalBasicInfos.GetBySpecies(AnimalToAddSpecies.Species);
 
                         appointmentAnimal.SpeciesInfo = animalBasicInfo;
+                        animalBasicInfo.AssignedAnimals.Add(appointmentAnimal);
                     }
                     
 
                     uow.Appointments.Add(appointment);
 
-                    Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
-                    
                     uow.Save();
+
+                    appointments = uow.Appointments.GetAll().ToList();
                 }
             }
             catch (DbUpdateConcurrencyException ex)
@@ -1224,6 +1229,10 @@ namespace VetManagementApp.ViewModel
 
             RaisePropertyChanged(() => Customers);
             RaisePropertyChanged(() => TreatedAnimals);
+
+            if(appointments != null)
+                Appointments = new ObservableCollection<Appointment>(appointments);
+
 
             // null form values 
             await ResetAppointmentFormValues();
