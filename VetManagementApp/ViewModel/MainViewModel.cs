@@ -671,20 +671,20 @@ namespace VetManagementApp.ViewModel
 
         #region Command variables and properties
 
-        private IAsyncCommand _removeSelectedCustomerAsyncCommand;
-        private IAsyncCommand _showPrefillingDatabaseWindowAsyncCommand;
-        private IAsyncCommand _openLogsWindowAsyncCommand;
-        private IAsyncCommand<IList> _addNewAnimalAsyncCommand;
-        private IAsyncCommand _addNewMedicineAsyncCommand;
-        private IAsyncCommand _removeAllAnimalsAsyncCommand;
-        private IAsyncCommand _removeAllMedicinesAsyncCommand;
-        private IAsyncCommand _removeSelectedAnimalBasicInfoAsyncCommand;
-        private IAsyncCommand _removeSelectedMedicineAsyncCommand;
-        private IAsyncCommand _removeAllCustomersAsyncCommand;
-        private IAsyncCommand _makeAnAppointmentAsyncCommand;
-        private IAsyncCommand _removeSelectedAppointmentAsyncCommand;
-        private IAsyncCommand<Medicine> _leftMouseDoubleClickOnAvailableMedicinesAsyncCommand;
-        private IAsyncCommand<Medicine> _leftMouseDoubleClickOnAssignedMedicinesAsyncCommand;
+        private AsyncCommand _removeSelectedCustomerAsyncCommand;
+        private AsyncCommand _showPrefillingDatabaseWindowAsyncCommand;
+        private AsyncCommand _openLogsWindowAsyncCommand;
+        private AsyncCommand<IList> _addNewAnimalAsyncCommand;
+        private AsyncCommand _addNewMedicineAsyncCommand;
+        private AsyncCommand _removeAllAnimalsAsyncCommand;
+        private AsyncCommand _removeAllMedicinesAsyncCommand;
+        private AsyncCommand _removeSelectedAnimalBasicInfoAsyncCommand;
+        private AsyncCommand _removeSelectedMedicineAsyncCommand;
+        private AsyncCommand _removeAllCustomersAsyncCommand;
+        private AsyncCommand _makeAnAppointmentAsyncCommand;
+        private AsyncCommand _removeSelectedAppointmentAsyncCommand;
+        private AsyncCommand<Medicine> _leftMouseDoubleClickOnAvailableMedicinesAsyncCommand;
+        private AsyncCommand<Medicine> _leftMouseDoubleClickOnAssignedMedicinesAsyncCommand;
         private AsyncCommand _autoScrollLogsAsyncCommand;
 
         public IAsyncCommand RemoveSelectedCustomerAsyncCommand
