@@ -25,6 +25,11 @@ namespace VetManagementApp.Model
             return queryResult;
         }
 
+        public override ICollection<Appointment> GetAll()
+        {
+            return All;
+        }
+
         public override ICollection<Appointment> All
         {
             get

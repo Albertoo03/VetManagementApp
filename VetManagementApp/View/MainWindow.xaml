@@ -326,7 +326,7 @@
                             <DockPanel Margin="10">
                                 <DockPanel DockPanel.Dock="Top" Height="300">
                                     <DockPanel DockPanel.Dock="Left">
-                                        <DataGrid ItemsSource="{Binding Appointments}" Width="480" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedAppointment, Mode=OneWayToSource}">
+                                        <DataGrid ItemsSource="{Binding FilteredAppointments}" Width="480" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedAppointment, Mode=OneWayToSource}">
                                             <DataGrid.Columns >
                                                 <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                                                 <DataGridTextColumn Header="Customer" Binding="{Binding AppointedCustomer}" Width="140"/>
@@ -343,8 +343,8 @@
                                         </Button>
                                     </DockPanel>
                                 </DockPanel>
-                                <DockPanel Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DockPanel},AncestorLevel=1}}">
-                                    <GroupBox Header="Appointment management" Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DockPanel},AncestorLevel=1}}">
+                                <DockPanel>
+                                    <GroupBox Header="Appointment management">
                                         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Width="550" Height="200">
                                             <StackPanel Orientation="Horizontal" Height="130" Margin="0 30 0 10">
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -353,7 +353,7 @@
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 0 0" Height="140">
                                                     <Label Content="Available medicines: "/>
-                                                    <ListView x:Name="AvailableMedicinesListView" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.SpeciesInfo.AvailableMedicines}" ToolTip="Hold CTRL pressed while mouse click to select multpile medicines." Height="100" SelectionMode="Single">
+                                                    <ListView x:Name="AvailableMedicinesListView" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.SpeciesInfo.AvailableMedicines}" ToolTip="Double click on selected medicine to assign it to selected treated animal." Height="100" SelectionMode="Single">
                                                         <ListView.IsEnabled>
                                                             <MultiBinding Converter="{StaticResource IsAssignMedicinesEnabledMultiConverter}">
                                                                 <Binding Path="SelectedAppointment" Converter="{StaticResource IsObjectNullToBooleanConverter}"/>
@@ -389,7 +389,7 @@
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 0 0" Height="140">
                                                     <Label Content="Assigned medicines: "/>
-                                                    <ListView x:Name="AssignedMedicinesListView" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.AssignedMedicines}" ToolTip="Hold CTRL pressed while mouse click to select multpile medicines." Height="100">
+                                                    <ListView x:Name="AssignedMedicinesListView" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.AssignedMedicines}" ToolTip="Double click on selected medicine to unassign it from selected treated animal." Height="100">
                                                         <ListView.View>
                                                             <GridView AllowsColumnReorder="False">
                                                                 <GridViewColumn Header="Name" Width="145" >
@@ -505,8 +505,25 @@
                     </StackPanel.Style>
                     <GroupBox Header="Actions" Padding="10">
                         <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 10">
+                                <RadioButton x:Name="ShowAllAppointmentsRadioButton" GroupName="AppointmentAction" IsChecked="{Binding ShowAllAppointmentsIsChecked, Mode=TwoWay}" Margin="0 0 20 0" Width="100" Height="40" >
+                                    <TextBlock Text="Show all appointments" TextAlignment="Center" TextWrapping="Wrap"/>
+                                    <RadioButton.Style>
+                                        <Style TargetType="{x:Type RadioButton}">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate>
+                                                        <ToggleButton Content="{Binding Path=Content, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RadioButton}}}"
+                              IsChecked="{Binding Path=IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RadioButton}}}"/>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </RadioButton.Style>
+                                </RadioButton>
+                            </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <RadioButton GroupName="AppointmentAction" Margin="0 0 20 0" Width="100" Height="40">
+                                <RadioButton GroupName="AppointmentAction" Margin="0 0 20 0" Width="100" Height="40" IsChecked="{Binding ShowOnlyPastAppointmentsIsChecked, Mode=TwoWay}">
                                     <TextBlock Text="Show only past appointments" TextAlignment="Center" TextWrapping="Wrap"/>
                                     <RadioButton.Style>
                                         <Style TargetType="{x:Type RadioButton}">
@@ -521,8 +538,8 @@
                                         </Style>
                                     </RadioButton.Style>
                                 </RadioButton>
-                                <RadioButton GroupName="AppointmentAction" Width="120" Height="40">
-                                    <TextBlock Text="Show only coming appointments" TextAlignment="Center" TextWrapping="Wrap"/>
+                                <RadioButton GroupName="AppointmentAction" Width="120" Height="40" IsChecked="{Binding ShowOnlyUpcomingAppointmentsIsChecked, Mode=TwoWay}">
+                                    <TextBlock Text="Show only upcoming appointments" TextAlignment="Center" TextWrapping="Wrap"/>
                                     <RadioButton.Style>
                                         <Style TargetType="{x:Type RadioButton}">
                                             <Setter Property="Template">

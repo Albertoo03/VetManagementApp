@@ -31,14 +31,31 @@ namespace VetManagementApp.ViewModel
 
         #region Events
         public event StatusOfAppointmentChangedEvent RaiseStatusOfAppointmentChangedEvent;
+        public Func<string, Task> RaiseFilterAppointmentChangedEvent;
         #endregion
 
         #region Private variables
-        private string _animalBasicInfoToAddSpecies;
+
+        private Customer _selectedCustomer;
+        private AnimalBasicInfo _selectedAnimalBasicInfo;
+        private Medicine _selectedMedicine;
+        private Animal _selectedAnimal;
+        private Animal _selectedAnimalInAppointmentTab;
+        private Customer _selectedCustomerInAppointmentTab;
+        private Appointment _selectedAppointment;
+        private AnimalBasicInfo _animalToAddSpecies;
+
         private AnimalGroup _animalBasicInfoToAddGroup;
+        private Gender _animalToAddGender;
+        private PurposeOfVisit _appointmentPurposeOfVisit;
+        private DateTime _appointmentDate = DateTime.Now;
+        private StateOfVisit _selectedStatusOfVisit = StateOfVisit.WaitingForVisit;
 
-        
+        private const string _showAllAppointments = "ShowAllAppointments";
+        private const string _showPastAppointments = "ShowPastAppointments";
+        private const string _showUpcomingAppointments = "ShowUpcomingAppointments";
 
+        private string _animalBasicInfoToAddSpecies;
         private string _medicineToAddName;
         private string _medicineToAddManufacturer;
         private string _medicineToAddDose;
@@ -51,9 +68,10 @@ namespace VetManagementApp.ViewModel
         private int _customerToAddHouseNumber;
         private string _customerToAddContact;
         private string _animalToAddName;
-        private AnimalBasicInfo _animalToAddSpecies;
         private string _appointmentDescription;
+        private string _currentlySelectedFilterActionOnAppointmentTab = _showAllAppointments;
 
+        
         private bool _showOwnedAnimalsChecked;
         private bool _showAppointmentsHistoryChecked;
         private bool _addNewCustomerIsChecked = true;
@@ -61,22 +79,10 @@ namespace VetManagementApp.ViewModel
         private bool _addNewAnimalIsChecked = true;
         private bool _animalFromDatabaseIsChecked;
         private bool _appointmentStatusWasChanged = false;
+        private bool _showAllAppointmentsIsChecked = false;
+        private bool _showOnlyPastAppointmentsIsChecked = false;
+        private bool _showOnlyUpcomingAppointmentsIsChecked = false;
 
-        private Customer _selectedCustomer;
-        private AnimalBasicInfo _selectedAnimalBasicInfo;
-        private Medicine _selectedMedicine;
-        private Animal _selectedAnimal;
-        private Animal _selectedAnimalInAppointmentTab;
-        private Customer _selectedCustomerInAppointmentTab;
-
-        private Customer _appointmentCustomer;
-        private Animal _appointmentAnimal;
-        private Appointment _selectedAppointment;
-
-        private Gender _animalToAddGender;
-        private PurposeOfVisit _appointmentPurposeOfVisit;
-        private DateTime _appointmentDate = DateTime.Now;
-        private StateOfVisit _selectedStatusOfVisit = StateOfVisit.WaitingForVisit;
         #endregion
 
         #region Properties
@@ -368,7 +374,87 @@ namespace VetManagementApp.ViewModel
             }
         }
 
+        public bool ShowAllAppointmentsIsChecked
+        {
+            get => _showAllAppointmentsIsChecked;
+            set
+            {
+                if (_showAllAppointmentsIsChecked != value)
+                {
+                    _showAllAppointmentsIsChecked = value;
+
+                    if (_showAllAppointmentsIsChecked == true)
+                    {
+                        _currentlySelectedFilterActionOnAppointmentTab = _showAllAppointments;
+                        RaiseFilterAppointmentChangedEvent(_showAllAppointments);
+                    }
+                        
+
+                    if(!_showAllAppointmentsIsChecked && !_showOnlyPastAppointmentsIsChecked && !_showOnlyUpcomingAppointmentsIsChecked)
+                    {
+                        _currentlySelectedFilterActionOnAppointmentTab = _showAllAppointments;
+                        RaiseFilterAppointmentChangedEvent(_currentlySelectedFilterActionOnAppointmentTab);
+                    }
+
+                    RaisePropertyChanged(() => ShowAllAppointmentsIsChecked);
+                }
+            }
+        }
+        public bool ShowOnlyPastAppointmentsIsChecked
+        {
+            get => _showOnlyPastAppointmentsIsChecked;
+            set
+            {
+                if (_showOnlyPastAppointmentsIsChecked != value)
+                {
+                    _showOnlyPastAppointmentsIsChecked = value;
+
+                    if (_showOnlyPastAppointmentsIsChecked == true)
+                    {
+                        _currentlySelectedFilterActionOnAppointmentTab = _showPastAppointments;
+                        RaiseFilterAppointmentChangedEvent(_showPastAppointments);
+                    }
+                        
+
+                    if (!_showAllAppointmentsIsChecked && !_showOnlyPastAppointmentsIsChecked && !_showOnlyUpcomingAppointmentsIsChecked)
+                    {
+                        _currentlySelectedFilterActionOnAppointmentTab = _showAllAppointments;
+                        RaiseFilterAppointmentChangedEvent(_currentlySelectedFilterActionOnAppointmentTab);
+                    }
+
+                    RaisePropertyChanged(() => ShowOnlyPastAppointmentsIsChecked);
+                }
+            }
+        }
+        public bool ShowOnlyUpcomingAppointmentsIsChecked
+        {
+            get => _showOnlyUpcomingAppointmentsIsChecked;
+            set
+            {
+                if (_showOnlyUpcomingAppointmentsIsChecked != value)
+                {
+                    _showOnlyUpcomingAppointmentsIsChecked = value;
+
+                    if (_showOnlyUpcomingAppointmentsIsChecked == true)
+                    {
+                        _currentlySelectedFilterActionOnAppointmentTab = _showUpcomingAppointments;
+                        RaiseFilterAppointmentChangedEvent(_showUpcomingAppointments);
+                    }
+                        
+
+                    if (!_showAllAppointmentsIsChecked && !_showOnlyPastAppointmentsIsChecked && !_showOnlyUpcomingAppointmentsIsChecked)
+                    {
+                        _currentlySelectedFilterActionOnAppointmentTab = _showAllAppointments;
+                        RaiseFilterAppointmentChangedEvent(_currentlySelectedFilterActionOnAppointmentTab);
+                    }
+                        
+
+                    RaisePropertyChanged(() => ShowOnlyUpcomingAppointmentsIsChecked);
+                }
+            }
+        }
         
+
         public bool NewCustomerAllFieldsFilled
         {
             get 
@@ -484,6 +570,10 @@ namespace VetManagementApp.ViewModel
                 if (_selectedAppointment != value)
                 {
                     _selectedAppointment = value;
+
+                    if(_selectedAppointment != null)
+                        SelectedStatusOfVisit = SelectedAppointment.StateOfVisit;
+
                     RaisePropertyChanged(() => SelectedAppointment);
                 }
             }
@@ -619,6 +709,7 @@ namespace VetManagementApp.ViewModel
         #endregion
 
         #region Collections
+        private ObservableCollection<Appointment> _appointments;
 
         public ObservableCollection<Customer> Customers
         {
@@ -634,15 +725,30 @@ namespace VetManagementApp.ViewModel
 
         public ObservableCollection<Appointment> Appointments
         {
-            get
+            get => _appointments;
+            set
             {
-                using (var uow = new UnitOfWork())
+                if(_appointments != value)
                 {
-                    return new ObservableCollection<Appointment>(uow.Appointments.All);
+                    _appointments = value;
+
+                    if(RaiseFilterAppointmentChangedEvent!= null)
+                        RaiseFilterAppointmentChangedEvent(_currentlySelectedFilterActionOnAppointmentTab);
                 }
             }
-
         }
+        //{
+        //    get
+        //    {
+        //        using (var uow = new UnitOfWork())
+        //        {
+        //            return new ObservableCollection<Appointment>(uow.Appointments.All);
+        //        }
+        //    }
+
+        //}
+
+        public ObservableCollection<Appointment> FilteredAppointments { get; set; }
 
         public ObservableCollection<Animal> TreatedAnimals
         {
@@ -761,11 +867,15 @@ namespace VetManagementApp.ViewModel
 
                 animalToAssign.AvailableMedicines.Add(medicine);
 
+                Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
+
                 uow.Save();
             }
 
             RaisePropertyChanged(() => Medicines);
             RaisePropertyChanged(() => AnimalBasicInfos);
+            //RaisePropertyChanged(() => Appointments);
+            RaisePropertyChanged(() => TreatedAnimals);
 
             MedicineToAddName = "";
             MedicineToAddManufacturer = "";
@@ -1009,6 +1119,8 @@ namespace VetManagementApp.ViewModel
                     //animalBasicInfo.AvailableMedicines.Add(medicineToAdd);
                     //medicineToAdd.AssignedAnimals.Add(animalBasicInfo);
 
+                    Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
+                    
                     uow.Save();
                 }
             }
@@ -1030,7 +1142,7 @@ namespace VetManagementApp.ViewModel
             }
            
 
-            RaisePropertyChanged(() => Appointments);
+            //RaisePropertyChanged(() => Appointments);
             RaisePropertyChanged(() => Customers);
             RaisePropertyChanged(() => TreatedAnimals);
 
@@ -1107,6 +1219,9 @@ namespace VetManagementApp.ViewModel
                     unitOfWork.Appointments.Delete(a => a.AppointedCustomer.Id == SelectedCustomer.Id);
                     unitOfWork.Customers.Delete(SelectedCustomer.Id);
 
+
+                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
+
                     unitOfWork.Save();
                 }
 
@@ -1115,7 +1230,7 @@ namespace VetManagementApp.ViewModel
             SelectedCustomer = null;
             RaisePropertyChanged(() => Customers);
             RaisePropertyChanged(() => TreatedAnimals);
-            RaisePropertyChanged(() => Appointments);
+            //RaisePropertyChanged(() => Appointments);
         }
 
         private async Task RemoveAllCustomersAsync()
@@ -1133,12 +1248,14 @@ namespace VetManagementApp.ViewModel
                     uow.Customers.Delete(customer.Id);
                 }
 
+                Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
+
                 uow.Save();
             }
 
             SelectedCustomer = null;
             RaisePropertyChanged(() => Customers);
-            RaisePropertyChanged(() => Appointments);
+            //RaisePropertyChanged(() => Appointments);
             RaisePropertyChanged(() => TreatedAnimals);
         }
 
@@ -1163,6 +1280,9 @@ namespace VetManagementApp.ViewModel
 
                         unitOfWork.Appointments.Delete(SelectedAppointment.Id);
 
+
+                        Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
+
                         unitOfWork.Save();
                     }
 
@@ -1184,7 +1304,7 @@ namespace VetManagementApp.ViewModel
             });
 
             SelectedAppointment = null;
-            RaisePropertyChanged(() => Appointments);
+            //RaisePropertyChanged(() => Appointments);
         }
 
         private async Task ShowPrefillingDatabaseWindowAsync()
@@ -1213,10 +1333,12 @@ namespace VetManagementApp.ViewModel
 
                     animal.AssignedMedicines.Add(medicine);
 
+                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
+
                     unitOfWork.Save();
                 }
 
-                RaisePropertyChanged(() => Appointments);
+                //RaisePropertyChanged(() => Appointments);
                 RaisePropertyChanged(() => TreatedAnimals);
             }
             catch (Exception ex)
@@ -1251,10 +1373,12 @@ namespace VetManagementApp.ViewModel
 
                     animal.AssignedMedicines.Remove(medicine);
 
+                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
+
                     unitOfWork.Save();
                 }
 
-                RaisePropertyChanged(() => Appointments);
+                //RaisePropertyChanged(() => Appointments);
                 RaisePropertyChanged(() => TreatedAnimals);
             }
             catch (Exception ex)
@@ -1270,6 +1394,7 @@ namespace VetManagementApp.ViewModel
 
             }
         }
+
         #endregion
 
         #region Event callbacks
@@ -1284,11 +1409,33 @@ namespace VetManagementApp.ViewModel
 
                 selectedAppointment.StateOfVisit = SelectedStatusOfVisit;
 
+                Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
+
                 uow.Save();
             }
 
-            RaisePropertyChanged(() => Appointments);
+            //RaisePropertyChanged(() => Appointments);
 
+        }
+
+        private async Task OnRaiseFilterAppointmentChangedEvent(string filterSelection)
+        {
+            switch (filterSelection)
+            {
+                case _showAllAppointments:
+                    FilteredAppointments = Appointments;
+                    break;
+                case _showPastAppointments:
+                    FilteredAppointments = new ObservableCollection<Appointment>(Appointments.Where(app => app.Date < DateTime.Now.Date));
+                    break;
+                case _showUpcomingAppointments:
+                    FilteredAppointments = new ObservableCollection<Appointment>(Appointments.Where(app => app.Date >= DateTime.Now.Date));
+                    break;
+                default:
+                    break;
+            }
+
+            RaisePropertyChanged(() => FilteredAppointments);
         }
         #endregion
 
@@ -1296,6 +1443,13 @@ namespace VetManagementApp.ViewModel
         {
             // Add callback to the event handler
             RaiseStatusOfAppointmentChangedEvent += OnRaiseStatusOfAppointmentChangedEvent;
+            RaiseFilterAppointmentChangedEvent += OnRaiseFilterAppointmentChangedEvent;
+
+            using (var uow = new UnitOfWork())
+            {
+                Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
+            }
+            
         }
 
 

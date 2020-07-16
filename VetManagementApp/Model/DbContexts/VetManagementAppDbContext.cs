@@ -14,14 +14,6 @@ namespace VetManagementApp.Model.DbContexts
             //this.Configuration.LazyLoadingEnabled = false;
         }
 
-        //protected override void OnModelCreating(DbModelBuilder modelBuilder)
-        //{
-        //    modelBuilder.ComplexType<Animal>()
-        //        .Property(p => p.SpeciesInfo.Species).IsOptional();
-
-        //    base.OnModelCreating(modelBuilder);
-        //}
-
         public DbSet<Customer> Customers { get; set; }
         public DbSet<AnimalBasicInfo> AnimalsBasicInfos { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
