@@ -15,9 +15,9 @@
         ResizeMode="NoResize"
         DataContext="{Binding Source={StaticResource Locator}, Path=Main}">
     <Window.Resources>
-        <conv:SelectedCustomerConverter x:Key="SelectedCustomerConverter"/>
         <conv:IsObjectNullToBooleanConverter x:Key="IsObjectNullToBooleanConverter"/>
         <conv:GenderSelectionConverter x:Key="GenderSelectionConverter"/>
+        <conv:IsAssignMedicinesEnabledMultiConverter x:Key="IsAssignMedicinesEnabledMultiConverter"/>
     </Window.Resources>
     <DockPanel>
         <DockPanel DockPanel.Dock="Top" Height="30">
@@ -349,11 +349,17 @@
                                             <StackPanel Orientation="Horizontal" Height="130" Margin="0 30 0 10">
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                     <Label Content="Status: "/>
-                                                    <ComboBox ItemsSource="{Binding Source={StaticResource enumStateOfVisit}}" Width="120"/>
+                                                    <ComboBox ItemsSource="{Binding Source={StaticResource enumStateOfVisit}}" IsEnabled="{Binding SelectedAppointment, Converter={StaticResource IsObjectNullToBooleanConverter}}" Width="120" SelectedItem="{Binding SelectedStatusOfVisit, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 0 0" Height="140">
                                                     <Label Content="Available medicines: "/>
-                                                    <ListView x:Name="AvailableMedicines" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.SpeciesInfo.AvailableMedicines}" ToolTip="Hold CTRL pressed while mouse click to select multpile medicines." Height="100" SelectionMode="Single">
+                                                    <ListView x:Name="AvailableMedicinesListView" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.SpeciesInfo.AvailableMedicines}" ToolTip="Hold CTRL pressed while mouse click to select multpile medicines." Height="100" SelectionMode="Single">
+                                                        <ListView.IsEnabled>
+                                                            <MultiBinding Converter="{StaticResource IsAssignMedicinesEnabledMultiConverter}">
+                                                                <Binding Path="SelectedAppointment" Converter="{StaticResource IsObjectNullToBooleanConverter}"/>
+                                                                <Binding Path="SelectedAppointment.StateOfVisit"/>
+                                                            </MultiBinding>
+                                                        </ListView.IsEnabled>
                                                         <!--<ListView.ItemTemplate>
                                                             <DataTemplate>
                                                                 <TextBlock x:Name="ItemTemp" Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap">
@@ -370,7 +376,7 @@
                                                                         <DataTemplate>
                                                                             <TextBlock Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap">
                                                                                 <TextBlock.InputBindings>
-                                                                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.LeftMouseDoubleClickOnAvailableMedicinesAsyncCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=AvailableMedicines, Path=SelectedItem}"/>
+                                                                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.LeftMouseDoubleClickOnAvailableMedicinesAsyncCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=AvailableMedicinesListView, Path=SelectedItem}"/>
                                                                                 </TextBlock.InputBindings>
                                                                             </TextBlock>
                                                                         </DataTemplate>
@@ -378,12 +384,12 @@
                                                                 </GridViewColumn>
                                                             </GridView>
                                                         </ListView.View>
-                                                        
+
                                                     </ListView>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 0 0" Height="140">
                                                     <Label Content="Assigned medicines: "/>
-                                                    <ListView x:Name="AssignedMedicines" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.AssignedMedicines}" ToolTip="Hold CTRL pressed while mouse click to select multpile medicines." Height="100">
+                                                    <ListView x:Name="AssignedMedicinesListView" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.AssignedMedicines}" ToolTip="Hold CTRL pressed while mouse click to select multpile medicines." Height="100">
                                                         <ListView.View>
                                                             <GridView AllowsColumnReorder="False">
                                                                 <GridViewColumn Header="Name" Width="145" >
@@ -391,7 +397,7 @@
                                                                         <DataTemplate>
                                                                             <TextBlock Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap">
                                                                                 <TextBlock.InputBindings>
-                                                                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.LeftMouseDoubleClickOnAssignedMedicinesAsyncCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=AssignedMedicines, Path=SelectedItem}"/>
+                                                                                    <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.LeftMouseDoubleClickOnAssignedMedicinesAsyncCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=AssignedMedicinesListView, Path=SelectedItem}"/>
                                                                                 </TextBlock.InputBindings>
                                                                             </TextBlock>
                                                                         </DataTemplate>
@@ -402,7 +408,6 @@
                                                     </ListView>
                                                 </StackPanel>
                                             </StackPanel>
-                                            <Button Command="{Binding SaveChangesOnAppointmentAsyncCommand}" Content="SaveChanges" Width="120" Height="30"/>
                                         </StackPanel>
                                        
                                     </GroupBox>

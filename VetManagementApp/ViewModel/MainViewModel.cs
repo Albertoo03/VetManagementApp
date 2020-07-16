@@ -25,6 +25,14 @@ namespace VetManagementApp.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
+        #region Delegates 
+        public delegate Task StatusOfAppointmentChangedEvent();
+        #endregion
+
+        #region Events
+        public event StatusOfAppointmentChangedEvent RaiseStatusOfAppointmentChangedEvent;
+        #endregion
+
         #region Private variables
         private string _animalBasicInfoToAddSpecies;
         private AnimalGroup _animalBasicInfoToAddGroup;
@@ -34,6 +42,7 @@ namespace VetManagementApp.ViewModel
         private string _medicineToAddName;
         private string _medicineToAddManufacturer;
         private string _medicineToAddDose;
+        private string _medicineToAddTargetAnimal;
         private string _customerToAddFirstName;
         private string _customerToAddLastName;
         private string _customerToAddCity;
@@ -51,6 +60,7 @@ namespace VetManagementApp.ViewModel
         private bool _customerFromDatabaseIsChecked;
         private bool _addNewAnimalIsChecked = true;
         private bool _animalFromDatabaseIsChecked;
+        private bool _appointmentStatusWasChanged = false;
 
         private Customer _selectedCustomer;
         private AnimalBasicInfo _selectedAnimalBasicInfo;
@@ -66,6 +76,7 @@ namespace VetManagementApp.ViewModel
         private Gender _animalToAddGender;
         private PurposeOfVisit _appointmentPurposeOfVisit;
         private DateTime _appointmentDate = DateTime.Now;
+        private StateOfVisit _selectedStatusOfVisit = StateOfVisit.WaitingForVisit;
         #endregion
 
         #region Properties
@@ -133,7 +144,19 @@ namespace VetManagementApp.ViewModel
                 }
             }
         }
-
+        public string MedicineToAddTargetAnimal
+        {
+            get => _medicineToAddTargetAnimal;
+            set
+            {
+                if (_medicineToAddTargetAnimal != value)
+                {
+                    _medicineToAddTargetAnimal = value;
+                    RaisePropertyChanged(() => MedicineToAddTargetAnimal);
+                }
+            }
+        }
+        
         public string CustomerToAddFirstName
         {
             get => _customerToAddFirstName;
@@ -332,7 +355,20 @@ namespace VetManagementApp.ViewModel
                 }
             }
         }
+        public bool AppointmentStatusWasChanged
+        {
+            get => _appointmentStatusWasChanged;
+            set
+            {
+                if (_appointmentStatusWasChanged != value)
+                {
+                    _appointmentStatusWasChanged = value;
+                    RaisePropertyChanged(() => AppointmentStatusWasChanged);
+                }
+            }
+        }
 
+        
         public bool NewCustomerAllFieldsFilled
         {
             get 
@@ -491,6 +527,24 @@ namespace VetManagementApp.ViewModel
             }
         }
         
+        public StateOfVisit SelectedStatusOfVisit
+        {
+            get => _selectedStatusOfVisit;
+            set
+            {
+                if(_selectedStatusOfVisit != value)
+                {
+                    _selectedStatusOfVisit = value;
+
+                    if(SelectedAppointment != null)
+                    {
+                        RaiseStatusOfAppointmentChangedEvent();
+                    }
+
+                    RaisePropertyChanged(() => SelectedStatusOfVisit);
+                }
+            }
+        }
         #endregion
 
         #region Command variables and properties
@@ -561,7 +615,7 @@ namespace VetManagementApp.ViewModel
         {
             get => _leftMouseDoubleClickOnAssignedMedicinesAsyncCommand ?? new AsyncCommand<Medicine>(LeftMouseDoubleOnAssignedMedicinesClickAsync);
         }
-        
+
         #endregion
 
         #region Collections
@@ -690,6 +744,7 @@ namespace VetManagementApp.ViewModel
             medicine.Name = MedicineToAddName;
             medicine.Manufacturer = MedicineToAddManufacturer;
             medicine.Dose = MedicineToAddDose;
+            medicine.TargetAnimal = MedicineToAddTargetAnimal;
 
             using (var uow = new UnitOfWork())
             {
@@ -702,13 +757,20 @@ namespace VetManagementApp.ViewModel
                 }
 
                 uow.Medicines.Add(medicine);
+                var animalToAssign = uow.AnimalBasicInfos.GetByPredicate(animal => animal.Species == medicine.TargetAnimal);
+
+                animalToAssign.AvailableMedicines.Add(medicine);
+
                 uow.Save();
             }
 
             RaisePropertyChanged(() => Medicines);
+            RaisePropertyChanged(() => AnimalBasicInfos);
+
             MedicineToAddName = "";
             MedicineToAddManufacturer = "";
             MedicineToAddDose = "";
+            MedicineToAddTargetAnimal = "";
         }
 
         private async Task RemoveAllAnimalsAsync()
@@ -1210,10 +1272,30 @@ namespace VetManagementApp.ViewModel
         }
         #endregion
 
+        #region Event callbacks
+        public async Task OnRaiseStatusOfAppointmentChangedEvent()
+        {
+            if (SelectedAppointment == null)
+                return;
+
+            using (var uow = new UnitOfWork())
+            {
+                var selectedAppointment = uow.Appointments.Get(SelectedAppointment.Id);
+
+                selectedAppointment.StateOfVisit = SelectedStatusOfVisit;
+
+                uow.Save();
+            }
+
+            RaisePropertyChanged(() => Appointments);
+
+        }
+        #endregion
 
         public MainViewModel()
         {
-
+            // Add callback to the event handler
+            RaiseStatusOfAppointmentChangedEvent += OnRaiseStatusOfAppointmentChangedEvent;
         }
 
 
