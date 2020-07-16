@@ -2,35 +2,45 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 using VetManagementApp.Model;
 using static VetManagementApp.Helpers.HelpfulUtilities;
 
 namespace VetManagementApp.Converters
 {
+    // Multi converters
 
-    public class SelectedCustomerConverter : IValueConverter
+    public class IsAssignMedicinesEnabledMultiConverter : IMultiValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == null)
-                return null;
+            var isAnyAppointmentSelected = (bool)values[0];
+            StateOfVisit selectedStateOfVisit;
 
-            return (Customer)value;
+            if (values[1] == DependencyProperty.UnsetValue)
+                selectedStateOfVisit = StateOfVisit.WaitingForVisit;
+            else
+            {
+                selectedStateOfVisit = (StateOfVisit)values[1];
+            }
+            
+
+            return (isAnyAppointmentSelected && selectedStateOfVisit == StateOfVisit.VisitCompleted) ? true : false;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
-            if (value == null)
-                return null;
-
-            return (Customer)value;
+            return new[] { value, value };
         }
     }
 
 
+
+    // Converters
     public class IsObjectNullToBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -59,27 +69,4 @@ namespace VetManagementApp.Converters
         }
     }
 
-    //public class MakeAppointmentConditionsMultiConverter : IMultiValueConverter
-    //{
-    //    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-    //    {
-    //        bool conditionsMet = true;
-
-    //        var appointmentCustomer = (Customer)values[0];
-    //        var appointmentAnimal = (Animal)values[1];
-    //        var appointmentDate = (DateTime)values[2];
-    //        var appointmentDescription = (string)values[3];
-
-    //        if (appointmentCustomer == null || appointmentAnimal == null || appointmentDate == null || appointmentDescription == null)
-    //            conditionsMet = false;
-            
-
-    //        return conditionsMet;
-    //    }
-
-    //    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-    //}
 }
