@@ -17,7 +17,7 @@
     <Window.Resources>
         <conv:IsObjectNullToBooleanConverter x:Key="IsObjectNullToBooleanConverter"/>
         <conv:GenderSelectionConverter x:Key="GenderSelectionConverter"/>
-        <conv:IsAssignMedicinesEnabledMultiConverter x:Key="IsAssignMedicinesEnabledMultiConverter"/>
+        <conv:IsAssigningMedicinesEnabledMultiConverter x:Key="IsAssigningMedicinesEnabledMultiConverter"/>
     </Window.Resources>
     <Window.InputBindings>
         <MouseBinding Gesture="RightClick" Command="{Binding RightMouseClickAsyncCommand}"/>
@@ -52,10 +52,10 @@
                                 <Setter Property="Text" Value=" "/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding ElementName=RemoveSelectedCustomer, Path=IsMouseOver}" Value="True">
-                                        <Setter Property="Text" Value="Removes selected customer from database"/>
+                                        <Setter Property="Text" Value="Removes selected customer from database. Removing customer means removing also all owned animals and assigned appointments from database."/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding ElementName=RemoveAllCustomers, Path=IsMouseOver}" Value="True">
-                                        <Setter Property="Text" Value="Removes all customers from database"/>
+                                        <Setter Property="Text" Value="Removes all customers from database. Removing customers means removing also all owned animals and assigned appointments from database."/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding ElementName=CustomersDataGrid, Path=IsMouseOver}" Value="True">
                                         <Setter Property="Text" Value="Select any of customers to enable some actions."/>
@@ -66,22 +66,33 @@
                                     <DataTrigger Binding="{Binding ElementName=ShowAppointmentsHistory, Path=IsMouseOver}" Value="True">
                                         <Setter Property="Text" Value="Shows appointments of selected customer."/>
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding ElementName=AppointmentsTab, Path=IsMouseOver}" Value="True">
-                                        <Setter Property="Text" Value="Select to switch to appointment management window."/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding ElementName=CustomersTab, Path=IsMouseOver}" Value="True">
-                                        <Setter Property="Text" Value="Select to switch to customers management window."/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding ElementName=TreatedAnimalsTab, Path=IsMouseOver}" Value="True">
-                                        <Setter Property="Text" Value="Select to switch to treated animals management window."/>
-                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding ElementName=LogsWindowMenuItem, Path=IsMouseOver}" Value="True">
                                         <Setter Property="Text" Value="Select to open logs window."/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding ElementName=FileMenuItem, Path=IsMouseOver}" Value="True">
                                         <Setter Property="Text" Value="Select to show additional options."/>
                                     </DataTrigger>
-                                    
+                                    <DataTrigger Binding="{Binding ElementName=AvailableMedicinesListView, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Double click on selected medicine to prescribe it to selected treated animal."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=AssignedMedicinesListView, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Double click on selected medicine to remove it from prescribed medicines."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=StatusOfVisitComboBox, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Click to expand the list of allowed statuses."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=RemoveSelectedAppointment, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Removes selected appointment from database. Removing appointment doesn't mean removing also customer and animal assigned to this appointment."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=AddNewCustomer, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Select 'New customer' in order to add new customer. Select 'Customer from database' to select existing customer from database."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=SelectExistingCustomer, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Select 'New customer' in order to add new customer. Select 'Customer from database' to select existing customer from database."/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ElementName=PrefillDatabaseButton, Path=IsMouseOver}" Value="True">
+                                        <Setter Property="Text" Value="Press in order to put sample basic data for testing purposes."/>
+                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </TextBlock.Style>
@@ -166,11 +177,19 @@
                                                     <Label Content="Last name: " Grid.Row="0" Grid.Column="0"/>
                                                     <TextBox Margin= "0 2 0 2"  Text="{Binding CustomerToAddLastName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Grid.Row="0" Grid.Column="1"/>
                                                     <Label Content="Postal code: " Grid.Row="1" Grid.Column="0"/>
-                                                    <TextBox Margin= "0 2 0 2"  Text="{Binding CustomerToAddPostalCode, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Grid.Row="1" Grid.Column="1"/>
+                                                    <TextBox x:Name="PostalCodeTextBox" Margin= "0 2 0 2" Grid.Row="1" Grid.Column="1" Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
+                                                        <TextBox.Text>
+                                                            <Binding Path="CustomerToAddPostalCode" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                                                <Binding.ValidationRules>
+                                                                    <val:PostalCodeValidator/>
+                                                                </Binding.ValidationRules>
+                                                            </Binding>
+                                                        </TextBox.Text>
+                                                    </TextBox>
                                                     <Label Content="House nr: " Grid.Row="2" Grid.Column="0"/>
                                                     <TextBox x:Name="HouseNumberTextBox" Margin= "0 2 0 2" Grid.Row="2" Grid.Column="1" Validation.ErrorTemplate="{StaticResource validationErrorTemplate}">
                                                         <TextBox.Text>
-                                                            <Binding Path="CustomerToAddHouseNumber" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" FallbackValue="1">
+                                                            <Binding Path="CustomerToAddHouseNumber" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
                                                                 <Binding.ValidationRules>
                                                                     <val:HouseNumberValidator/>
                                                                 </Binding.ValidationRules>
@@ -191,7 +210,7 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </StackPanel.Style>
-                                            <DataGrid ItemsSource="{Binding Customers}" AutoGenerateColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedCustomerInAppointmentTab, Mode=TwoWay}" SelectionMode="Single" SelectionUnit="FullRow" Height="170" Margin="60 0 0 0">
+                                            <DataGrid ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomerInAppointmentTab, Mode=TwoWay}" Height="170" Margin="60 0 0 0" Style="{StaticResource DataGridStyle}">
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Full name" Binding="{Binding FullName}" Width="120"/>
                                                     <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="120"/>
@@ -291,13 +310,6 @@
                                                             </GridView>
                                                         </ListView.View>
                                                     </ListView>
-                                                    <!--<ComboBox x:Name="AppointmentAnimalsComboBox" Margin="0 2 0 2" ItemsSource="{Binding SelectedCustomerInAppointmentTab.OwnedAnimals}" IsEditable="True" Grid.Row="0" Grid.Column="1" Width="150">
-                                                        <ComboBox.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap"/>
-                                                            </DataTemplate>
-                                                        </ComboBox.ItemTemplate>
-                                                    </ComboBox>-->
                                                 </StackPanel>
                                             </StackPanel>
                                         </StackPanel>
@@ -331,28 +343,28 @@
                                         <Style TargetType="Button">
                                             <Setter Property="IsEnabled" Value="True"/>
                                             <Style.Triggers>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding Path=(Validation.HasError), ElementName=HouseNumberTextBox}" Value="True"/>
-                                                    </MultiDataTrigger.Conditions>
+                                                <DataTrigger Binding="{Binding Path=(Validation.HasError), ElementName=HouseNumberTextBox}" Value="True">
                                                     <Setter Property="IsEnabled" Value="False"/>
-                                                </MultiDataTrigger>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Path=(Validation.HasError), ElementName=PostalCodeTextBox}" Value="True">
+                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Button.Style>
                                 </Button>
                             </StackPanel>
-                             
+
                         </TabItem>
                         <TabItem x:Name="ManageAppointmentsTab" Header="Manage appointments">
                             <DockPanel Margin="10">
                                 <DockPanel DockPanel.Dock="Top" Height="300">
                                     <DockPanel DockPanel.Dock="Left">
-                                        <DataGrid ItemsSource="{Binding FilteredAppointments}" Width="480" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedAppointment, Mode=TwoWay}">
+                                        <DataGrid ItemsSource="{Binding FilteredAppointments}" SelectedItem="{Binding SelectedAppointment, Mode=TwoWay}" Style="{StaticResource DataGridStyle}" Width="480">
                                             <DataGrid.Columns >
                                                 <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
-                                                <DataGridTextColumn Header="Customer" Binding="{Binding AppointedCustomer}" Width="140" CanUserSort="False"/>
-                                                <DataGridTextColumn Header="Animal" Binding="{Binding AppointedAnimal}" Width="110" CanUserSort="False"/>
+                                                <DataGridTextColumn Header="Customer" Binding="{Binding AppointedCustomer}" Width="140"/>
+                                                <DataGridTextColumn Header="Animal" Binding="{Binding AppointedAnimal}" Width="110"/>
                                                 <DataGridTextColumn Header="Purpose of visit" Binding="{Binding PurposeOfVisit}" Width="100"/>
                                                 <DataGridTextColumn Header="Date" Binding="{Binding Date.Date}" Width="90"/>
                                                 <DataGridTextColumn Header="State" Binding="{Binding StateOfVisit}" Width="100"/>
@@ -360,7 +372,7 @@
                                         </DataGrid>
                                     </DockPanel>
                                     <DockPanel>
-                                        <Button Command="{Binding RemoveSelectedAppointmentAsyncCommand, Mode=OneWay}" Margin="0 0 0 10" HorizontalAlignment="Center" Width="120" Height="40">
+                                        <Button x:Name="RemoveSelectedAppointment" Command="{Binding RemoveSelectedAppointmentAsyncCommand, Mode=OneWay}" IsEnabled="{Binding SelectedAppointment, Converter={StaticResource IsObjectNullToBooleanConverter}}" Margin="0 0 0 10" HorizontalAlignment="Center" Width="120" Height="40">
                                             <TextBlock Text="Remove selected appointment" TextAlignment="Center" TextWrapping="Wrap"/>
                                         </Button>
                                     </DockPanel>
@@ -371,26 +383,17 @@
                                             <StackPanel Orientation="Horizontal" Height="130" Margin="0 30 0 10">
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                     <Label Content="Status: "/>
-                                                    <ComboBox ItemsSource="{Binding Source={StaticResource enumStateOfVisit}}" IsEnabled="{Binding SelectedAppointment, Converter={StaticResource IsObjectNullToBooleanConverter}}" Width="120" SelectedItem="{Binding SelectedStatusOfVisit, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <ComboBox x:Name="StatusOfVisitComboBox" ItemsSource="{Binding Source={StaticResource enumStateOfVisit}}" IsEnabled="{Binding SelectedAppointment, Converter={StaticResource IsObjectNullToBooleanConverter}}" Width="120" SelectedItem="{Binding SelectedStatusOfVisit, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"/>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 0 0" Height="140">
                                                     <Label Content="Available medicines: "/>
                                                     <ListView x:Name="AvailableMedicinesListView" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.SpeciesInfo.AvailableMedicines}" ToolTip="Double click on selected medicine to assign it to selected treated animal." Height="100" SelectionMode="Single">
                                                         <ListView.IsEnabled>
-                                                            <MultiBinding Converter="{StaticResource IsAssignMedicinesEnabledMultiConverter}">
+                                                            <MultiBinding Converter="{StaticResource IsAssigningMedicinesEnabledMultiConverter}">
                                                                 <Binding Path="SelectedAppointment" Converter="{StaticResource IsObjectNullToBooleanConverter}"/>
                                                                 <Binding Path="SelectedAppointment.StateOfVisit"/>
                                                             </MultiBinding>
                                                         </ListView.IsEnabled>
-                                                        <!--<ListView.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <TextBlock x:Name="ItemTemp" Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap">
-                                                                    <TextBlock.InputBindings>
-                                                                        <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding DataContext.LeftMouseDoubleClickAsyncCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" CommandParameter="{Binding ElementName=AvailableMedicines, Path=SelectedItem}"/>
-                                                                    </TextBlock.InputBindings>
-                                                                </TextBlock>
-                                                            </DataTemplate>
-                                                        </ListView.ItemTemplate>-->
                                                         <ListView.View>
                                                             <GridView AllowsColumnReorder="False">
                                                                 <GridViewColumn Header="Name" Width="145" >
@@ -412,6 +415,12 @@
                                                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="20 0 0 0" Height="140">
                                                     <Label Content="Assigned medicines: "/>
                                                     <ListView x:Name="AssignedMedicinesListView" ItemsSource="{Binding SelectedAppointment.AppointedAnimal.AssignedMedicines}" ToolTip="Double click on selected medicine to unassign it from selected treated animal." Height="100">
+                                                        <ListView.IsEnabled>
+                                                            <MultiBinding Converter="{StaticResource IsAssigningMedicinesEnabledMultiConverter}">
+                                                                <Binding Path="SelectedAppointment" Converter="{StaticResource IsObjectNullToBooleanConverter}"/>
+                                                                <Binding Path="SelectedAppointment.StateOfVisit"/>
+                                                            </MultiBinding>
+                                                        </ListView.IsEnabled>
                                                         <ListView.View>
                                                             <GridView AllowsColumnReorder="False">
                                                                 <GridViewColumn Header="Name" Width="145" >
@@ -431,9 +440,9 @@
                                                 </StackPanel>
                                             </StackPanel>
                                         </StackPanel>
-                                       
+
                                     </GroupBox>
-                                    
+
                                 </DockPanel>
                             </DockPanel>
                         </TabItem>
@@ -448,7 +457,7 @@
                             </StackPanel>
                         </DockPanel>
                         <DockPanel>
-                            <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserReorderColumns="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}" SelectionMode="Single" SelectionUnit="FullRow">
+                            <DataGrid x:Name="CustomersDataGrid" ItemsSource="{Binding Customers}" SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}" Style="{StaticResource DataGridStyle}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                                     <DataGridTextColumn Header="First name" Binding="{Binding FirstName}" Width="80"/>
@@ -466,7 +475,7 @@
                 </TabItem>
                 <TabItem x:Name="TreatedAnimalsTab" Header="Treated animals">
                     <DockPanel Margin="10">
-                        <DataGrid ItemsSource="{Binding TreatedAnimals}" AutoGenerateColumns="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False" CanUserResizeColumns="False" IsReadOnly="True" Width="588" SelectionMode="Single" SelectionUnit="FullRow" SelectedItem="{Binding SelectedAnimal, Mode=TwoWay}">
+                        <DataGrid ItemsSource="{Binding TreatedAnimals}" SelectedItem="{Binding SelectedAnimal, Mode=TwoWay}" Style="{StaticResource DataGridStyle}" Width="588">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                                 <DataGridTextColumn Header="Species" Binding="{Binding SpeciesInfo.Species}" Width="100"/>
@@ -496,7 +505,7 @@
                 <Label Content="Home actions" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold" Margin="0 50 0 20" />
                 <GroupBox Header="Actions">
                     <StackPanel Orientation="Vertical">
-                        <Button Command="{Binding ShowPrefillingDatabaseWindowAsyncCommand}" Margin="20 10 20 10" Width="120">
+                        <Button x:Name="PrefillDatabaseButton" Command="{Binding ShowPrefillingDatabaseWindowAsyncCommand}" Margin="20 10 20 10" Width="120">
                             <TextBlock Text="Fill database with preliminary data" TextAlignment="Center" TextWrapping="Wrap"/>
                         </Button>
                     </StackPanel>
@@ -644,7 +653,7 @@
                         </Style>
                     </StackPanel.Style>
                     <CheckBox Content="Show only treated animals" Margin="0 0 0 10"/>
-                    <DataGrid ItemsSource="{Binding SelectedCustomer.OwnedAnimals}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" Height="300" IsReadOnly="True">
+                    <DataGrid ItemsSource="{Binding SelectedCustomer.OwnedAnimals}" Height="300" Style="{StaticResource DataGridStyle}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="80"/>
@@ -666,7 +675,7 @@
                         </Style>
                     </StackPanel.Style>
                     <CheckBox Content="Show only past appointments" Margin="0 0 0 10"/>
-                    <DataGrid ItemsSource="{Binding SelectedCustomer.Appointments}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" Height="300" IsReadOnly="True">
+                    <DataGrid ItemsSource="{Binding SelectedCustomer.Appointments}" Height="300" Style="{StaticResource DataGridStyle}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Purpose of visit" Binding="{Binding PurposeOfVisit}" Width="100"/>
@@ -675,7 +684,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
-                
+
             </StackPanel>
             <StackPanel Orientation="Vertical" Margin="-340 0 0 0">
                 <StackPanel.Style>
@@ -754,7 +763,7 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <DataGrid ItemsSource="{Binding SelectedAnimal.Appointments}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False" IsReadOnly="True">
+                    <DataGrid ItemsSource="{Binding SelectedAnimal.Appointments}" Style="{StaticResource DataGridStyle}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Purpose" Binding="{Binding PurposeOfVisit}" Width="70"/>
@@ -775,7 +784,7 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <DataGrid ItemsSource="{Binding SelectedAnimal.AssignedMedicines}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False" IsReadOnly="True">
+                    <DataGrid ItemsSource="{Binding SelectedAnimal.AssignedMedicines}" Style="{StaticResource DataGridStyle}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="100"/>
@@ -795,7 +804,7 @@
                             </Style.Triggers>
                         </Style>
                     </StackPanel.Style>
-                    <DataGrid ItemsSource="{Binding SelectedAnimal.SpeciesInfo.AvailableMedicines}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserReorderColumns="False" CanUserDeleteRows="False" CanUserResizeColumns="False" IsReadOnly="True">
+                    <DataGrid ItemsSource="{Binding SelectedAnimal.SpeciesInfo.AvailableMedicines}" Style="{StaticResource DataGridStyle}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="30"/>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="100"/>
@@ -804,15 +813,12 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
-                
+
             </StackPanel>
 
         </DockPanel>
-        
-    </DockPanel>
-    <!--<Grid>
-        <TextBox Text="{Binding Path=TestText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="100" Height="40"/>
-    </Grid>-->
 
-    
+    </DockPanel>
+
+
 </Window>

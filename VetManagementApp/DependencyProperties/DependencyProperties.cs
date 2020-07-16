@@ -11,7 +11,9 @@ namespace VetManagementApp.DependencyProperties
 {
     #region Dependency properties
 
-    // AutoScroll property
+    /// <summary>
+    /// Autoscroll dependency property
+    /// </summary>
     public static class AutoScrollUtility
     {
         // Logs autoscrolling
@@ -56,6 +58,9 @@ namespace VetManagementApp.DependencyProperties
     }
 
 
+    /// <summary>
+    /// Multiselect bindable data grid dependency property
+    /// </summary>
     public class MultiSelectBindableDataGrid : DataGrid
     {
         public static readonly DependencyProperty SelectedItemsProperty =

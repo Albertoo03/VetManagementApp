@@ -51,26 +51,6 @@ namespace VetManagementApp.Helpers
             VisitCompleted
         };
 
-        public enum DosageFrequency
-        {
-            OnceADay,
-            OnceAWeek,
-            TwiceADay,
-            TwiceAWeek,
-            Every6Hours,
-            Every4Hours,
-        };
-
-        public enum PurposeOfUseOfMedicine
-        {
-
-        }
-
-        public struct Dosage
-        {
-            public float DoseInMiligrams { get; set; }
-            //public en
-        }
 
         
 

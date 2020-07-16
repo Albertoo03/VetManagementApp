@@ -8,15 +8,17 @@
                     xmlns:d1p1="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     xmlns:vm="clr-namespace:VetManagementApp.ViewModel">
 
+    
+    
     <ControlTemplate x:Key="validationErrorTemplate">
         <DockPanel>
-            <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom" Margin="0 2 0 5">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="3 0 0 0">
                 <Grid Width="12" Height="12">
                     <Ellipse Width="12" Height="12" Fill="Red" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <TextBlock Foreground="White" FontWeight="Heavy" FontSize="8" HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" 
                                    ToolTip="{Binding ElementName=ErrorAdorner, Path=AdornedElement.(Validation.Errors)/ErrorContent}">X</TextBlock>
                 </Grid>
-                <TextBlock Foreground="Red" FontSize="12" Margin="2 0 0 0" Text="{Binding ElementName=ErrorAdorner, Path=AdornedElement.(Validation.Errors)/ErrorContent}"></TextBlock>
+                <TextBlock Foreground="Red" FontSize="12" Margin="2 4 0 0" Text="{Binding ElementName=ErrorAdorner, Path=AdornedElement.(Validation.Errors)/ErrorContent}"></TextBlock>
             </StackPanel>
             <AdornedElementPlaceholder x:Name="ErrorAdorner"/>
         </DockPanel>
@@ -39,4 +41,18 @@
             <x:Type TypeName="vmah:HelpfulUtilities+StateOfVisit"/>
         </ObjectDataProvider.MethodParameters>
     </ObjectDataProvider>
+
+    
+    <Style x:Key="DataGridStyle" TargetType="DataGrid">
+        <Setter Property="AutoGenerateColumns" Value="False" />
+        <Setter Property="CanUserAddRows" Value="False" />
+        <Setter Property="CanUserDeleteRows" Value="False" />
+        <Setter Property="CanUserReorderColumns" Value="False" />
+        <Setter Property="CanUserResizeRows" Value="False" />
+        <Setter Property="CanUserResizeColumns" Value="False" />
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="SelectionMode" Value="Single" />
+        <Setter Property="SelectionUnit" Value="FullRow"/>
+    </Style>
+    
 </ResourceDictionary>

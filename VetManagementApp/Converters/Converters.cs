@@ -14,7 +14,10 @@ namespace VetManagementApp.Converters
 {
     // Multi converters
 
-    public class IsAssignMedicinesEnabledMultiConverter : IMultiValueConverter
+    /// <summary>
+    /// Checks if all conditions are met to enable assigning medicines to treated animal.
+    /// </summary>
+    public class IsAssigningMedicinesEnabledMultiConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
@@ -41,6 +44,10 @@ namespace VetManagementApp.Converters
 
 
     // Converters
+
+    /// <summary>
+    /// Checks if object is null and returns boolean value.
+    /// </summary>
     public class IsObjectNullToBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -54,6 +61,10 @@ namespace VetManagementApp.Converters
         }
     }
 
+
+    /// <summary>
+    /// Returns gender based on gender selection.
+    /// </summary>
     public class GenderSelectionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

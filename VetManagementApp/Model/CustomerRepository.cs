@@ -26,12 +26,6 @@ namespace VetManagementApp.Model
             var queryResult = _vetDbContext.Animals.Where(animal => animal.Owner == customer).ToList();
 
             return queryResult;
-            //using (var context = new VetManagementAppDbContext())
-            //{
-            //    var queryResult = context.TreatedAnimals.Where(animal => animal.Owner == customer).ToList();
-
-            //    return queryResult;
-            //}
         }
 
 
@@ -45,12 +39,8 @@ namespace VetManagementApp.Model
 
         public ICollection<Appointment> GetAppointments(Customer customer)
         {
-            //var listOfAppointmentss = _vetDbContext.Customers.Where(cust => cust.Id == customer.Id).Include(p => p.Appointments).ToList();
-
-            //_vetDbContext.Appointments.Where(cust => cust.AppointedCustomer.Id == customer.Id).Load();
 
             var listOfAppointments = _vetDbContext.Appointments.Where(cust => cust.AppointedCustomer.Id == customer.Id).ToList();
-            //var queryResult = _vetDbContext.Customers.Local;
             
             return listOfAppointments;
         }
@@ -62,7 +52,6 @@ namespace VetManagementApp.Model
             {
                 _vetDbContext.Customers.Include(p => p.Appointments).Include(p => p.OwnedAnimals.Select(animal => animal.SpeciesInfo)).Load();
 
-                //_vetDbContext.Entry()
                 var queryResult = _vetDbContext.Customers.Local;
 
                 return queryResult;

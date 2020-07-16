@@ -71,17 +71,7 @@
                                                 <GridViewColumn DisplayMemberBinding="{Binding Name}" Header="Name" Width="145" />
                                             </GridView>
                                         </ListView.View>
-                                        <!--<ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Name}" FontSize="12" TextAlignment="Left" TextWrapping="Wrap"/>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>-->
                                     </ListView>
-                                    <!--<DataGrid x:Name="AvailableMedicinesSelection" ItemsSource="{Binding Medicines}" SelectionUnit="FullRow" SelectionMode="Extended" AutoGenerateColumns="False" Grid.Column="1" Grid.Row="2" Width="130" HorizontalAlignment="Center">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Name" Width="120" Binding="{Binding Name}"/>
-                                        </DataGrid.Columns>
-                                    </DataGrid>-->
                                 </Grid>
                                 <Button Command="{Binding AddNewAnimalAsyncCommand}" CommandParameter="{Binding ElementName=AvailableMedicinesSelection, Path=SelectedItems}" Content="Add animal" HorizontalAlignment="Center" Margin="0 40 0 0" Width="100" Height="30"/>
                             </StackPanel>

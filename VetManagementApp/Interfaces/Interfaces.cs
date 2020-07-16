@@ -15,17 +15,11 @@ namespace VetManagementApp.Interfaces
         public interface IAnimalRepository : ICommonRepository<Animal>
         {
             ICollection<Appointment> GetAppointments(Animal animal);
-            //ObservableCollection<Medicine> GetListOfAvailableMedicines();
         }
 
         public interface IAppointmentRepository : ICommonRepository<Appointment>
         {
             IEnumerable<Appointment> GetPastAppointments(Customer customer);
-        }
-
-        public interface IMedicine
-        {
-
         }
 
         public interface ICustomerRepository : ICommonRepository<Customer>

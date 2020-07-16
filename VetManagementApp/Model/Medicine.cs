@@ -9,6 +9,19 @@ namespace VetManagementApp.Model
 {
     public class Medicine
     {
+        public Medicine()
+        {
+
+        }
+
+        public Medicine(string name, string manufacturer, string dose, string targetAnimal)
+        {
+            this.Name = name;
+            this.Manufacturer = manufacturer;
+            this.Dose = dose;
+            this.TargetAnimal = targetAnimal;
+        }
+
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }

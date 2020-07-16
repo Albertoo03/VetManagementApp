@@ -21,14 +21,8 @@ namespace VetManagementApp.Model
 
         public ICollection<Appointment> GetAppointments(Animal animal)
         {
-            //var listOfAppointmentss = _vetDbContext.Customers.Where(cust => cust.Id == customer.Id).Include(p => p.Appointments).ToList();
-
-            //_vetDbContext.Appointments.Where(cust => cust.AppointedCustomer.Id == customer.Id).Load();
-            //_vetDbContext.Entry(animal).Collection(c => c.Appointments).Load();
-
 
             var listOfAppointments = _vetDbContext.Appointments.Where(cust => cust.AppointedAnimal.Id == animal.Id).ToList();
-            //var queryResult = _vetDbContext.Customers.Local;
 
             return listOfAppointments;
         }

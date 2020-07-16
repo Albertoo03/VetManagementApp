@@ -14,6 +14,8 @@ namespace VetManagementApp.Model
     {
         [Key]
         public int Id { get; set; }
+        
+        [MaxLength(15)]
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string FullName
@@ -43,15 +45,7 @@ namespace VetManagementApp.Model
         {
             return FullName + Environment.NewLine + Address;
         }
+
     }
 
-    //public class NormalCustomer : Customer
-    //{
-    //    public struct PESEL { };
-    //}
-
-    //public class Company : Customer
-    //{
-    //    public struct NIP { };
-    //}
 }

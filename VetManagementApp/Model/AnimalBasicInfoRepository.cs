@@ -44,15 +44,5 @@ namespace VetManagementApp.Model
             return queryResult;
         }
 
-        //public override void Add(AnimalBasicInfo entity)
-        //{
-        //    //_vetDbContext.Entry(entity.AvailableMedicines).State = EntityState.Unchanged;
-        //    foreach(var medicine in entity.AvailableMedicines)
-        //    {
-        //        _vetDbContext.Entry(medicine).State = EntityState.Unchanged;
-        //    }
-        //    base.Add(entity);
-        //}
-
     }
 }

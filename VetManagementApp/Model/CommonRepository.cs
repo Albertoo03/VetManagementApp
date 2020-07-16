@@ -33,20 +33,14 @@ namespace VetManagementApp.Model
 
         public virtual bool Delete(int entityId)
         {
-            //using (var context = new VetManagementAppDbContext())
-            //{
-                //var entityToRemove = _dbSet.Where(customer => customer.GetType().Id == entityId).FirstOrDefault();
             var entityToRemove = _dbSet.Find(entityId);
 
             if (entityToRemove == null)
                 return false;
             
             _dbSet.Remove(entityToRemove);
-                //context.Customers.Remove(entityToRemove);
-                //context.SaveChanges();
 
             return true;
-            //}
         }
 
         public void Delete(Expression<Func<T, bool>> predicate)
@@ -60,12 +54,6 @@ namespace VetManagementApp.Model
         public virtual ICollection<T> GetAll()
         {
             return _dbSet.ToList();
-            //using (var context = new VetManagementAppDbContext())
-            //{
-                //var queryResult = context.Customers.ToList();
-
-                //return queryResult;
-            //}
         }
 
         public virtual T Get(int entityId)
@@ -91,7 +79,6 @@ namespace VetManagementApp.Model
 
         public void SetAsUnchanged(T entity)
         {
-            //_dbContext.Entry(entity).State = EntityState.Unchanged;
             _dbSet.Attach(entity);
         }
 
@@ -99,11 +86,6 @@ namespace VetManagementApp.Model
         {
             _dbContext.Entry(entity).State = EntityState.Added;
         }
-        //public void Update(T entity)
-        //{
-        //    _dbSet.Attach(entity);
-        //    throw new NotImplementedException();
-        //}
 
         public virtual ICollection<T> All
         {

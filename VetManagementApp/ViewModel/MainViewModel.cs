@@ -65,7 +65,7 @@ namespace VetManagementApp.ViewModel
         private string _customerToAddCity;
         private string _customerToAddPostalCode;
         private string _customerToAddStreet;
-        private int _customerToAddHouseNumber;
+        private int _customerToAddHouseNumber = 1;
         private string _customerToAddContact;
         private string _animalToAddName;
         private string _appointmentDescription;
@@ -87,7 +87,9 @@ namespace VetManagementApp.ViewModel
         #endregion
 
         #region Properties
+
         public StringBuilder Logs { get; set; }
+
         public string LogsToShow
         {
             get
@@ -474,7 +476,9 @@ namespace VetManagementApp.ViewModel
             }
         }
         
-
+        /// <summary>
+        /// Property informing if all fields of new customer form are filled.
+        /// </summary>
         public bool NewCustomerAllFieldsFilled
         {
             get 
@@ -486,6 +490,10 @@ namespace VetManagementApp.ViewModel
                     return true;
             }
         }
+
+        /// <summary>
+        /// Property informing if all fields of new animal form are filled.
+        /// </summary>
         public bool NewAnimalAllFieldsFilled
         {
             get
@@ -497,6 +505,9 @@ namespace VetManagementApp.ViewModel
             }
         }
 
+        /// <summary>
+        /// Property informing if all fields of appointment info form are filled.
+        /// </summary>
         public bool AppointmentsInfoAllFieldsFilled
         {
             get
@@ -507,6 +518,7 @@ namespace VetManagementApp.ViewModel
                     return true;
             }
         }
+
         public bool AutoScrollLogs
         {
             get
@@ -519,7 +531,6 @@ namespace VetManagementApp.ViewModel
                 RaisePropertyChanged(() => AutoScrollLogs);
             }
         }
-
 
         public Customer SelectedCustomer
         {
@@ -603,10 +614,6 @@ namespace VetManagementApp.ViewModel
                 if (_selectedAppointment != value)
                 {
                     _selectedAppointment = value;
-
-                    if(_selectedAppointment != null)
-                        SelectedStatusOfVisit = SelectedAppointment.StateOfVisit;
-
                     RaisePropertyChanged(() => SelectedAppointment);
                 }
             }
@@ -649,7 +656,10 @@ namespace VetManagementApp.ViewModel
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Property informing about status selected by user. Checks if selected status is different from selected appointment status.
+        /// </summary>
         public StateOfVisit SelectedStatusOfVisit
         {
             get => _selectedStatusOfVisit;
@@ -661,7 +671,8 @@ namespace VetManagementApp.ViewModel
 
                     if(SelectedAppointment != null)
                     {
-                        RaiseStatusOfAppointmentChangedEvent();
+                        if(SelectedAppointment.StateOfVisit != _selectedStatusOfVisit)
+                            RaiseStatusOfAppointmentChangedEvent();
                     }
 
                     RaisePropertyChanged(() => SelectedStatusOfVisit);
@@ -762,7 +773,6 @@ namespace VetManagementApp.ViewModel
         
         #endregion
 
-
         #region Collections
         private ObservableCollection<Appointment> _appointments;
 
@@ -792,16 +802,6 @@ namespace VetManagementApp.ViewModel
                 }
             }
         }
-        //{
-        //    get
-        //    {
-        //        using (var uow = new UnitOfWork())
-        //        {
-        //            return new ObservableCollection<Appointment>(uow.Appointments.All);
-        //        }
-        //    }
-
-        //}
 
         public ObservableCollection<Appointment> FilteredAppointments { get; set; }
 
@@ -841,35 +841,40 @@ namespace VetManagementApp.ViewModel
         }
         #endregion
 
-
-
         #region Command action tasks
 
+        /// <summary>
+        /// Adds new animal species to the database.
+        /// </summary>
+        /// <param name="selectedItems"></param>
+        /// <returns></returns>
         private async Task AddNewAnimalBasicInfoAsync(IList selectedItems)
         {
             
-            AnimalBasicInfo animalBasicInfo = new AnimalBasicInfo();
-            animalBasicInfo.Species = AnimalBasicInfoToAddSpecies;
-            animalBasicInfo.Group = AnimalBasicInfoToAddGroup;
+            AnimalBasicInfo animalBasicInfo = new AnimalBasicInfo(AnimalBasicInfoToAddSpecies, AnimalBasicInfoToAddGroup);
+
             var selectedMedicinesList = selectedItems.Cast<Medicine>();
             animalBasicInfo.AvailableMedicines = new ObservableCollection<Medicine>();
             animalBasicInfo.AssignedAnimals = new ObservableCollection<Animal>();
 
             try
             {
-                using (var uow = new UnitOfWork())
+                await Task.Run(() =>
                 {
-                    foreach (var medicine in selectedMedicinesList)
+                    using (var uow = new UnitOfWork())
                     {
-                        var medicineToAdd = uow.Medicines.Get(medicine.Id);
-                        animalBasicInfo.AvailableMedicines.Add(medicineToAdd);
-                        medicineToAdd.AssignedAnimals.Add(animalBasicInfo);
+                        foreach (var medicine in selectedMedicinesList)
+                        {
+                            var medicineToAdd = uow.Medicines.Get(medicine.Id);
+                            animalBasicInfo.AvailableMedicines.Add(medicineToAdd);
+                            medicineToAdd.AssignedAnimals.Add(animalBasicInfo);
 
+                        }
+
+                        uow.AnimalBasicInfos.Add(animalBasicInfo);
+                        uow.Save();
                     }
-
-                    uow.AnimalBasicInfos.Add(animalBasicInfo);
-                    uow.Save();
-                }
+                });
             }
             catch(Exception ex)
             {
@@ -881,16 +886,18 @@ namespace VetManagementApp.ViewModel
             RaisePropertyChanged(() => AnimalBasicInfos);
             SelectedAnimalBasicInfo = null;
 
-            await Task.Run(() => AppendLog($"New animal species '{animalBasicInfo.Species}' added to the database."));
+            if(animalBasicInfo != null)
+                await Task.Run(() => AppendLog($"New animal species '{animalBasicInfo.Species}' added to the database."));
         }
 
+
+        /// <summary>
+        /// Adds new medicine to the database.
+        /// </summary>
+        /// <returns></returns>
         private async Task AddNewMedicineAsync()
         {
-            Medicine medicine = new Medicine();
-            medicine.Name = MedicineToAddName;
-            medicine.Manufacturer = MedicineToAddManufacturer;
-            medicine.Dose = MedicineToAddDose;
-            medicine.TargetAnimal = MedicineToAddTargetAnimal;
+            Medicine medicine = new Medicine(MedicineToAddName, MedicineToAddManufacturer, MedicineToAddDose, MedicineToAddTargetAnimal);
 
             using (var uow = new UnitOfWork())
             {
@@ -914,7 +921,6 @@ namespace VetManagementApp.ViewModel
 
             RaisePropertyChanged(() => Medicines);
             RaisePropertyChanged(() => AnimalBasicInfos);
-            //RaisePropertyChanged(() => Appointments);
             RaisePropertyChanged(() => TreatedAnimals);
 
             MedicineToAddName = "";
@@ -923,19 +929,28 @@ namespace VetManagementApp.ViewModel
             MedicineToAddTargetAnimal = "";
             SelectedMedicine = null;
 
-            await Task.Run(() => AppendLog($"New medicine '{medicine.Name}' added to the database."));
+            if(medicine != null)
+                await Task.Run(() => AppendLog($"New medicine '{medicine.Name}' added to the database."));
         }
 
+
+        /// <summary>
+        /// Removes all animal species from the database.
+        /// </summary>
+        /// <returns></returns>
         private async Task RemoveAllAnimalBasicInfosAsync()
         {
             try
             {
-                using (var uow = new UnitOfWork())
+                await Task.Run(() =>
                 {
-                    uow.AnimalBasicInfos.DeleteAll();
+                    using (var uow = new UnitOfWork())
+                    {
+                        uow.AnimalBasicInfos.DeleteAll();
 
-                    uow.Save();
-                }
+                        uow.Save();
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -957,14 +972,22 @@ namespace VetManagementApp.ViewModel
             await Task.Run(() => AppendLog($"All animals have been removed from the database."));
         }
         
+
+        /// <summary>
+        /// Removes all medicines from the database.
+        /// </summary>
+        /// <returns></returns>
         private async Task RemoveAllMedicinesAsync()
         {
-            using (var uow = new UnitOfWork())
+            await Task.Run(() =>
             {
-                uow.Medicines.DeleteAll();
+                using (var uow = new UnitOfWork())
+                {
+                    uow.Medicines.DeleteAll();
 
-                uow.Save();
-            }
+                    uow.Save();
+                }
+            });
 
             RaisePropertyChanged(() => Medicines);
             RaisePropertyChanged(() => AnimalBasicInfos);
@@ -973,6 +996,11 @@ namespace VetManagementApp.ViewModel
             await Task.Run(() => AppendLog($"All medicines have been removed from the database."));
         }
 
+
+        /// <summary>
+        /// Removes selected animal species from the database.
+        /// </summary>
+        /// <returns></returns>
         private async Task RemoveSelectedAnimalBasicInfoAsync()
         {
             await Task.Run(() =>
@@ -1007,12 +1035,18 @@ namespace VetManagementApp.ViewModel
             });
 
 
-            await Task.Run(() => AppendLog($"{SelectedAnimalBasicInfo.Species} species has been removed from the database."));
+            if(SelectedAnimalBasicInfo != null)
+                await Task.Run(() => AppendLog($"{SelectedAnimalBasicInfo.Species} species has been removed from the database."));
 
             SelectedAnimalBasicInfo = null;
             RaisePropertyChanged(() => AnimalBasicInfos);
         }
 
+
+        /// <summary>
+        /// Removes selected medicine from the database.
+        /// </summary>
+        /// <returns></returns>
         private async Task RemoveSelectedMedicineAsync()
         {
             await Task.Run(() =>
@@ -1029,7 +1063,9 @@ namespace VetManagementApp.ViewModel
 
             });
 
-            await Task.Run(() => AppendLog($"{SelectedMedicine.Name} medicine has been removed from the database."));
+
+            if(SelectedMedicine != null)
+                await Task.Run(() => AppendLog($"{SelectedMedicine.Name} medicine has been removed from the database."));
 
             SelectedMedicine = null;
             RaisePropertyChanged(() => Medicines);
@@ -1037,7 +1073,10 @@ namespace VetManagementApp.ViewModel
         }
 
 
-
+        /// <summary>
+        /// Makes an appointment based on filled form.
+        /// </summary>
+        /// <returns></returns>
         private async Task MakeAnAppointmentAsync()
         {
 
@@ -1053,6 +1092,7 @@ namespace VetManagementApp.ViewModel
             var appointmentCustomer = new Customer();
             var appointmentAnimal = new Animal();
 
+            // create new customer and assign data to it
             if (AddNewCustomerIsChecked)
             {
                 appointmentCustomer.FirstName = CustomerToAddFirstName;
@@ -1062,7 +1102,8 @@ namespace VetManagementApp.ViewModel
                 appointmentCustomer.Street = CustomerToAddStreet;
                 appointmentCustomer.HouseNumber = CustomerToAddHouseNumber;
                 appointmentCustomer.Contact = CustomerToAddContact;
-
+                
+                // assign data to new animal
                 appointmentAnimal.Name = AnimalToAddName;
                 appointmentAnimal.Gender = AnimalToAddGender;
 
@@ -1072,7 +1113,7 @@ namespace VetManagementApp.ViewModel
                 appointmentAnimal.Owner = appointmentCustomer;
             }
 
-
+            // customer selected from database
             if (CustomerFromDatabaseIsChecked)
             {
                 appointmentCustomer = SelectedCustomerInAppointmentTab;
@@ -1097,7 +1138,6 @@ namespace VetManagementApp.ViewModel
             }
 
 
-
             Appointment appointment = new Appointment();
             appointment.AppointedAnimal = appointmentAnimal;
             appointment.AppointedCustomer = appointmentCustomer;
@@ -1106,19 +1146,25 @@ namespace VetManagementApp.ViewModel
             appointment.PurposeOfVisit = AppointmentPurposeOfVisit;
             appointment.StateOfVisit = StateOfVisit.WaitingForVisit;
 
+
             try
             {
                 using (var uow = new UnitOfWork())
                 {
+                    
                     if(CustomerFromDatabaseIsChecked)
                     {
+                        // inform EF that customer already is in database
                         uow.Customers.SetAsUnchanged(appointmentCustomer);
                     }
 
+                    
                     if(AnimalFromDatabaseIsChecked)
                     {
+                        // inform EF that animal is already in database
                         uow.Animals.SetAsUnchanged(appointmentAnimal);
                     }
+
 
                     var listOfAppointments = uow.Customers.GetAppointments(appointmentCustomer);
 
@@ -1147,29 +1193,11 @@ namespace VetManagementApp.ViewModel
 
                         var animalBasicInfo = uow.AnimalBasicInfos.GetBySpecies(AnimalToAddSpecies.Species);
 
-                        
-                        //animalBasicInfo.AssignedAnimals = new ObservableCollection<Animal>();
-
-                        //animalBasicInfo.AssignedAnimals.Add(appointmentAnimal);
                         appointmentAnimal.SpeciesInfo = animalBasicInfo;
-                        //var basicInfo = animalBasicInfo.AssignedAnimals.Where(animal => animal.Id == appointmentAnimal.Id).FirstOrDefault().SpeciesInfo;
-
-                        //uow.AnimalBasicInfos.SetAsUnchanged(basicInfo);
-                        //uow.Animals.SetAsUnchanged(appointmentAnimal);
-                        //uow.AnimalBasicInfos.SetAsUnchanged(animalBasicInfo);
                     }
                     
 
-                    
-
-                    //var appointCustomer = uow.Appointments.Get(appointment.Id).AppointedCustomer;
-                    //var appointAnimal = uow.Appointments.Get(appointment.Id).AppointedAnimal;
-                    //uow.Customers.Add(appointmentCustomer);
-                    //uow.Animals.Add(appointmentAnimal);
                     uow.Appointments.Add(appointment);
-                    //var medicineToAdd = uow.Medicines.Get(medicine.Id);
-                    //animalBasicInfo.AvailableMedicines.Add(medicineToAdd);
-                    //medicineToAdd.AssignedAnimals.Add(animalBasicInfo);
 
                     Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
                     
@@ -1194,11 +1222,381 @@ namespace VetManagementApp.ViewModel
             }
            
 
-            //RaisePropertyChanged(() => Appointments);
             RaisePropertyChanged(() => Customers);
             RaisePropertyChanged(() => TreatedAnimals);
 
-            // null values 
+            // null form values 
+            await ResetAppointmentFormValues();
+            
+
+            await Task.Run(() => AppendLog($"New appointment has been scheduled."));
+        }
+
+
+        /// <summary>
+        /// Removes selected customer from database.
+        /// </summary>
+        /// <returns></returns>
+        private async Task RemoveSelectedCustomerAsync()
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                if (SelectedCustomer == null)
+                    return;
+
+                unitOfWork.Animals.Delete(a => a.Owner.Id == SelectedCustomer.Id);
+                unitOfWork.Appointments.Delete(a => a.AppointedCustomer.Id == SelectedCustomer.Id);
+                unitOfWork.Customers.Delete(SelectedCustomer.Id);
+
+
+                Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
+
+                unitOfWork.Save();
+            }
+
+            if(SelectedCustomer != null)
+                await Task.Run(() => AppendLog($"{SelectedCustomer.FullName} has been removed from the database."));
+
+            SelectedCustomer = null;
+            RaisePropertyChanged(() => Customers);
+            RaisePropertyChanged(() => TreatedAnimals);
+        }
+
+
+        /// <summary>
+        /// Removes all customers from database.
+        /// </summary>
+        /// <returns></returns>
+        private async Task RemoveAllCustomersAsync()
+        {
+
+            using (var uow = new UnitOfWork())
+            {
+
+                var customers = uow.Customers.GetAll();
+
+                foreach(var customer in customers)
+                {
+                    uow.Animals.Delete(a => a.Owner.Id == customer.Id);
+                    uow.Appointments.Delete(a => a.AppointedCustomer.Id == customer.Id);
+                    uow.Customers.Delete(customer.Id);
+                }
+
+                Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
+
+                uow.Save();
+            }
+
+            SelectedCustomer = null;
+            RaisePropertyChanged(() => Customers);
+            RaisePropertyChanged(() => TreatedAnimals);
+
+            await Task.Run(() => AppendLog($"All customers have been removed from the database."));
+        }
+
+
+        /// <summary>
+        /// Removes selected appointment from database.
+        /// </summary>
+        /// <returns></returns>
+        private async Task RemoveSelectedAppointmentAsync()
+        {
+            try
+            {
+
+                using (var unitOfWork = new UnitOfWork())
+                {
+                    if (SelectedAppointment == null)
+                        return;
+
+                    var appointmentCustomer = unitOfWork.Customers.Get(SelectedAppointment.AppointedCustomer.Id);
+                    appointmentCustomer.Appointments.Remove(SelectedAppointment);
+
+                    var appointmentAnimal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
+
+                    appointmentAnimal.Appointments.Remove(SelectedAppointment);
+
+                    unitOfWork.Appointments.Delete(SelectedAppointment.Id);
+
+
+                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
+
+                    unitOfWork.Save();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.StackTrace);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.InnerException);
+                Debug.WriteLine("==================");
+
+                MessageBox.Show("You cannot delete this type because it is assigned to treated animal.");
+
+            }
+
+            SelectedAppointment = null;
+            await Task.Run(() => AppendLog($"One of the appointments has been removed from the database."));
+        }
+
+
+        /// <summary>
+        /// Opens prefilling database window.
+        /// </summary>
+        /// <returns></returns>
+        private async Task ShowPrefillingDatabaseWindowAsync()
+        {
+            if (!IsWindowOpen<Window>("PreliminaryDatabaseFillingWindow"))
+            {
+                PreliminaryDatabaseFillingWindow preliminaryDatabaseFillingWindow = new PreliminaryDatabaseFillingWindow();
+                preliminaryDatabaseFillingWindow.Owner = System.Windows.Application.Current.MainWindow;
+                preliminaryDatabaseFillingWindow.ShowDialog();
+                preliminaryDatabaseFillingWindow.Name = "PreliminaryDatabaseFillingWindow";
+            }
+        }
+
+
+        /// <summary>
+        /// Opens logs window.
+        /// </summary>
+        /// <returns></returns>
+        private async Task OpenLogsWindowAsync()
+        {
+            if (!IsWindowOpen<Window>("LogsWindow"))
+            {
+                LogsWindow logsWindow = new LogsWindow();
+                logsWindow.Owner = System.Windows.Application.Current.MainWindow;
+                logsWindow.Show();
+                logsWindow.Name = "LogsWindow";
+            }
+        }
+
+
+        /// <summary>
+        /// Left mouse double click on available medicines listview handler.
+        /// </summary>
+        /// <param name="selectedMedicine"></param>
+        /// <returns></returns>
+        private async Task LeftMouseDoubleOnAvailableMedicinesClickAsync(Medicine selectedMedicine)
+        {
+            int animalId = 0;
+
+            if (selectedMedicine == null)
+                return;
+
+            try
+            {
+                using (var unitOfWork = new UnitOfWork())
+                {
+                    var animal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
+                    var medicine = unitOfWork.Medicines.Get(selectedMedicine.Id);
+
+                    animalId = animal.Id;
+
+                    animal.AssignedMedicines.Add(medicine);
+
+
+                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
+
+                    unitOfWork.Save();
+                }
+
+                RaisePropertyChanged(() => TreatedAnimals);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.StackTrace);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.InnerException);
+                Debug.WriteLine("==================");
+
+
+            }
+
+            if(selectedMedicine != null)
+                await Task.Run(() => AppendLog($"{selectedMedicine.Name} medicine has been assigned to animal with Id:{animalId}."));
+        }
+
+
+        /// <summary>
+        /// Left mouse double click on assigned medicines listview handler.
+        /// </summary>
+        /// <param name="selectedMedicine"></param>
+        /// <returns></returns>
+        private async Task LeftMouseDoubleOnAssignedMedicinesClickAsync(Medicine selectedMedicine)
+        {
+            int animalId = 0;
+
+            if (selectedMedicine == null)
+                return;
+
+            try
+            {
+                using (var unitOfWork = new UnitOfWork())
+                {
+                    var animal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
+                    var medicine = unitOfWork.Medicines.Get(selectedMedicine.Id);
+
+                    animalId = animal.Id;
+                    animal.AssignedMedicines.Remove(medicine);
+
+                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
+
+                    unitOfWork.Save();
+                }
+
+
+                RaisePropertyChanged(() => TreatedAnimals);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.Message);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.StackTrace);
+                Debug.WriteLine("==================");
+                Debug.WriteLine(ex.InnerException);
+                Debug.WriteLine("==================");
+
+            }
+
+            if(selectedMedicine != null)
+                await Task.Run(() => AppendLog($"{selectedMedicine.Name} medicine has been unassigned from animal with Id:{animalId}."));
+        }
+
+
+        /// <summary>
+        /// Enable/disable auto scroll in logs window.
+        /// </summary>
+        /// <returns></returns>
+        public async Task AutoScrollLogsAsync()
+        {
+            AutoScrollLogs = !AutoScrollLogs;
+        }
+
+
+        /// <summary>
+        /// Shuts down an application.
+        /// </summary>
+        /// <returns></returns>
+        private async Task ExitTheAppAsync()
+        {
+            App.Current.Shutdown();
+        }
+
+
+        /// <summary>
+        /// Right mouse click handling. 
+        /// </summary>
+        /// <returns></returns>
+        private async Task RightMouseClickAsync()
+        {
+            await SetNullToSelectableProperties();
+        }
+
+        #endregion
+
+        #region Event callbacks
+
+        /// <summary>
+        /// Callback raised on status changed event.
+        /// </summary>
+        /// <returns></returns>
+        public async Task OnRaiseStatusOfAppointmentChangedEvent()
+        {
+            if (SelectedAppointment == null)
+                return;
+
+            using (var uow = new UnitOfWork())
+            {
+                var selectedAppointment = uow.Appointments.Get(SelectedAppointment.Id);
+
+                selectedAppointment.StateOfVisit = SelectedStatusOfVisit;
+
+                Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
+
+                uow.Save();
+            }
+
+
+            if(SelectedAppointment != null)
+                await Task.Run(() => AppendLog($"Status of appointment with Id:{SelectedAppointment.Id} has been changed."));
+        }
+
+
+        /// <summary>
+        /// Callback raised change type of filtering the appointment event.
+        /// </summary>
+        /// <param name="filterSelection"></param>
+        /// <returns></returns>
+        private async Task OnRaiseFilterAppointmentChangedEvent(string filterSelection)
+        {
+            switch (filterSelection)
+            {
+                case _showAllAppointments:
+                    FilteredAppointments = Appointments;
+                    break;
+                case _showPastAppointments:
+                    FilteredAppointments = new ObservableCollection<Appointment>(Appointments.Where(app => app.Date < DateTime.Now.Date));
+                    break;
+                case _showUpcomingAppointments:
+                    FilteredAppointments = new ObservableCollection<Appointment>(Appointments.Where(app => app.Date >= DateTime.Now.Date));
+                    break;
+                default:
+                    break;
+            }
+
+            RaisePropertyChanged(() => FilteredAppointments);
+        }
+        #endregion
+
+        #region Method and tasks definitions
+        /// <summary>
+        /// Appends log to log window
+        /// </summary>
+        /// <param name="log"></param>
+        public void AppendLog(string log)
+        {
+            if (log == null)
+                return;
+
+            DateTime dateTime = DateTime.Now;
+            var cultureInfo = new CultureInfo("en-US");
+            LogsToShow = Logs.AppendFormat("> {0} :: {1} \n", dateTime.ToString(cultureInfo), log).ToString();
+
+        }
+
+
+        /// <summary>
+        /// Nulls all selectable properties.
+        /// </summary>
+        /// <returns></returns>
+        private async Task SetNullToSelectableProperties()
+        {
+            SelectedAnimal = null;
+            SelectedAnimalBasicInfo = null;
+            SelectedAnimalInAppointmentTab = null;
+            SelectedAppointment = null;
+            SelectedMedicine = null;
+            SelectedCustomer = null;
+            SelectedCustomerInAppointmentTab = null;
+        }
+
+
+        /// <summary>
+        /// Sets appointment form values to defualt.
+        /// </summary>
+        /// <returns></returns>
+        private async Task ResetAppointmentFormValues()
+        {
             CustomerToAddFirstName = null;
             CustomerToAddLastName = null;
             CustomerToAddCity = null;
@@ -1216,10 +1614,13 @@ namespace VetManagementApp.ViewModel
             AppointmentDate = DateTime.Now;
             AppointmentDescription = null;
             AppointmentPurposeOfVisit = PurposeOfVisit.FirstVisit;
-
-            await Task.Run(() => AppendLog($"New appointment has been scheduled."));
         }
 
+
+        /// <summary>
+        /// Checks if appointment could be made.
+        /// </summary>
+        /// <returns></returns>
         private async Task<bool> CheckIfAllConditionsToMakeAppointmentAreMet()
         {
             bool customerConditionsMet = false;
@@ -1259,319 +1660,14 @@ namespace VetManagementApp.ViewModel
 
             return allConditionsMet;
         }
-
-        private async Task RemoveSelectedCustomerAsync()
-        {
-            await Task.Run(() =>
-            {
-                using (var unitOfWork = new UnitOfWork())
-                {
-                    if (SelectedCustomer == null)
-                        return;
-
-                    unitOfWork.Animals.Delete(a => a.Owner.Id == SelectedCustomer.Id);
-                    unitOfWork.Appointments.Delete(a => a.AppointedCustomer.Id == SelectedCustomer.Id);
-                    unitOfWork.Customers.Delete(SelectedCustomer.Id);
-
-
-                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
-
-                    unitOfWork.Save();
-                }
-
-            });
-
-            await Task.Run(() => AppendLog($"{SelectedCustomer.FullName} has been removed from the database."));
-
-            SelectedCustomer = null;
-            RaisePropertyChanged(() => Customers);
-            RaisePropertyChanged(() => TreatedAnimals);
-            //RaisePropertyChanged(() => Appointments);
-        }
-
-        private async Task RemoveAllCustomersAsync()
-        {
-
-            using (var uow = new UnitOfWork())
-            {
-
-                var customers = uow.Customers.GetAll();
-
-                foreach(var customer in customers)
-                {
-                    uow.Animals.Delete(a => a.Owner.Id == customer.Id);
-                    uow.Appointments.Delete(a => a.AppointedCustomer.Id == customer.Id);
-                    uow.Customers.Delete(customer.Id);
-                }
-
-                Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
-
-                uow.Save();
-            }
-
-            SelectedCustomer = null;
-            RaisePropertyChanged(() => Customers);
-            //RaisePropertyChanged(() => Appointments);
-            RaisePropertyChanged(() => TreatedAnimals);
-
-            await Task.Run(() => AppendLog($"All customers have been removed from the database."));
-        }
-
-        private async Task RemoveSelectedAppointmentAsync()
-        {
-            await Task.Run(() =>
-            {
-                try
-                {
-
-                    using (var unitOfWork = new UnitOfWork())
-                    {
-                        if (SelectedAppointment == null)
-                            return;
-
-                        var appointmentCustomer = unitOfWork.Customers.Get(SelectedAppointment.AppointedCustomer.Id);
-                        appointmentCustomer.Appointments.Remove(SelectedAppointment);
-
-                        var appointmentAnimal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
-
-                        appointmentAnimal.Appointments.Remove(SelectedAppointment);
-
-                        unitOfWork.Appointments.Delete(SelectedAppointment.Id);
-
-
-                        Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
-
-                        unitOfWork.Save();
-                    }
-
-
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine("==================");
-                    Debug.WriteLine(ex.Message);
-                    Debug.WriteLine("==================");
-                    Debug.WriteLine(ex.StackTrace);
-                    Debug.WriteLine("==================");
-                    Debug.WriteLine(ex.InnerException);
-                    Debug.WriteLine("==================");
-
-                    MessageBox.Show("You cannot delete this type because it is assigned to treated animal.");
-
-                }
-            });
-
-            SelectedAppointment = null;
-            //RaisePropertyChanged(() => Appointments);
-            await Task.Run(() => AppendLog($"One of the appointments has been removed from the database."));
-        }
-
-        private async Task ShowPrefillingDatabaseWindowAsync()
-        {
-            if (!IsWindowOpen<Window>("PreliminaryDatabaseFillingWindow"))
-            {
-                PreliminaryDatabaseFillingWindow preliminaryDatabaseFillingWindow = new PreliminaryDatabaseFillingWindow();
-                preliminaryDatabaseFillingWindow.Owner = System.Windows.Application.Current.MainWindow;
-                preliminaryDatabaseFillingWindow.ShowDialog();
-                preliminaryDatabaseFillingWindow.Name = "PreliminaryDatabaseFillingWindow";
-            }
-        }
-
-        private async Task OpenLogsWindowAsync()
-        {
-            if (!IsWindowOpen<Window>("LogsWindow"))
-            {
-                LogsWindow logsWindow = new LogsWindow();
-                logsWindow.Owner = System.Windows.Application.Current.MainWindow;
-                logsWindow.Show();
-                logsWindow.Name = "LogsWindow";
-            }
-        }
-
-        private async Task LeftMouseDoubleOnAvailableMedicinesClickAsync(Medicine selectedMedicine)
-        {
-            int animalId = 0;
-
-            if (selectedMedicine == null)
-                return;
-
-            try
-            {
-                using (var unitOfWork = new UnitOfWork())
-                {
-                    var animal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
-                    var medicine = unitOfWork.Medicines.Get(selectedMedicine.Id);
-
-                    animalId = animal.Id;
-
-                    animal.AssignedMedicines.Add(medicine);
-
-
-                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
-
-                    unitOfWork.Save();
-                }
-
-                //RaisePropertyChanged(() => Appointments);
-                RaisePropertyChanged(() => TreatedAnimals);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("==================");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("==================");
-                Debug.WriteLine(ex.StackTrace);
-                Debug.WriteLine("==================");
-                Debug.WriteLine(ex.InnerException);
-                Debug.WriteLine("==================");
-
-
-            }
-
-            await Task.Run(() => AppendLog($"{selectedMedicine.Name} medicine has been assigned to animal with Id:{animalId}."));
-        }
-
-        private async Task LeftMouseDoubleOnAssignedMedicinesClickAsync(Medicine selectedMedicine)
-        {
-            int animalId = 0;
-
-            if (selectedMedicine == null)
-                return;
-
-            try
-            {
-                using (var unitOfWork = new UnitOfWork())
-                {
-                    var animal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
-                    var medicine = unitOfWork.Medicines.Get(selectedMedicine.Id);
-
-                    animalId = animal.Id;
-                    animal.AssignedMedicines.Remove(medicine);
-
-                    Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
-
-                    unitOfWork.Save();
-                }
-
-                //RaisePropertyChanged(() => Appointments);
-                RaisePropertyChanged(() => TreatedAnimals);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("==================");
-                Debug.WriteLine(ex.Message);
-                Debug.WriteLine("==================");
-                Debug.WriteLine(ex.StackTrace);
-                Debug.WriteLine("==================");
-                Debug.WriteLine(ex.InnerException);
-                Debug.WriteLine("==================");
-
-            }
-
-            await Task.Run(() => AppendLog($"{selectedMedicine.Name} medicine has been unassigned from animal with Id:{animalId}."));
-        }
-
-        /// <summary>
-        /// Enable/disable auto scroll in logs window.
-        /// </summary>
-        /// <returns></returns>
-        public async Task AutoScrollLogsAsync()
-        {
-            AutoScrollLogs = !AutoScrollLogs;
-        }
-
-        /// <summary>
-        /// Shuts down an application.
-        /// </summary>
-        /// <returns></returns>
-        private async Task ExitTheAppAsync()
-        {
-            App.Current.Shutdown();
-        }
-
-        private async Task RightMouseClickAsync()
-        {
-            await SetNullToSelectableProperties();
-        }
-
         #endregion
 
-        #region Event callbacks
-        public async Task OnRaiseStatusOfAppointmentChangedEvent()
-        {
-            if (SelectedAppointment == null)
-                return;
-
-            using (var uow = new UnitOfWork())
-            {
-                var selectedAppointment = uow.Appointments.Get(SelectedAppointment.Id);
-
-                selectedAppointment.StateOfVisit = SelectedStatusOfVisit;
-
-                Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
-
-                uow.Save();
-            }
-
-            //RaisePropertyChanged(() => Appointments);
-
-            await Task.Run(() => AppendLog($"Status of appointment with Id:{SelectedAppointment.Id} has been changed."));
-        }
-
-        private async Task OnRaiseFilterAppointmentChangedEvent(string filterSelection)
-        {
-            switch (filterSelection)
-            {
-                case _showAllAppointments:
-                    FilteredAppointments = Appointments;
-                    break;
-                case _showPastAppointments:
-                    FilteredAppointments = new ObservableCollection<Appointment>(Appointments.Where(app => app.Date < DateTime.Now.Date));
-                    break;
-                case _showUpcomingAppointments:
-                    FilteredAppointments = new ObservableCollection<Appointment>(Appointments.Where(app => app.Date >= DateTime.Now.Date));
-                    break;
-                default:
-                    break;
-            }
-
-            RaisePropertyChanged(() => FilteredAppointments);
-        }
-        #endregion
-
-        #region Method definitions
-        /// <summary>
-        /// Appends log to log window
-        /// </summary>
-        /// <param name="log"></param>
-        public void AppendLog(string log)
-        {
-            if (log == null)
-                return;
-
-            DateTime dateTime = DateTime.Now;
-            var cultureInfo = new CultureInfo("en-US");
-            LogsToShow = Logs.AppendFormat("> {0} :: {1} \n", dateTime.ToString(cultureInfo), log).ToString();
-
-        }
-
-        private async Task SetNullToSelectableProperties()
-        {
-            SelectedAnimal = null;
-            SelectedAnimalBasicInfo = null;
-            SelectedAnimalInAppointmentTab = null;
-            SelectedAppointment = null;
-            SelectedMedicine = null;
-            SelectedCustomer = null;
-            SelectedCustomerInAppointmentTab = null;
-        }
-
-        #endregion
+        #region Constructor
         public MainViewModel()
         {
             Logs = new StringBuilder("");
 
-            // Add callback to the event handler
+            // Add callback to the event handlers
             RaiseStatusOfAppointmentChangedEvent += OnRaiseStatusOfAppointmentChangedEvent;
             RaiseFilterAppointmentChangedEvent += OnRaiseFilterAppointmentChangedEvent;
 
@@ -1582,7 +1678,7 @@ namespace VetManagementApp.ViewModel
 
             AppendLog("App started.");
         }
-
+        #endregion
 
     }
 

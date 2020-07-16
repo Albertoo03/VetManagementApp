@@ -16,6 +16,14 @@ namespace VetManagementApp.Model
             this.AssignedAnimals = new HashSet<Animal>();
         }
 
+        public AnimalBasicInfo(string species, AnimalGroup group)
+        {
+            this.AvailableMedicines = new HashSet<Medicine>();
+            this.AssignedAnimals = new HashSet<Animal>();
+            this.Species = species;
+            this.Group = group;
+        }
+
         [Key]
         public string Species { get; set; }
 
