@@ -56,6 +56,8 @@ namespace VetManagementApp.Interfaces
             void SetAsUnchanged(T entity);
             void SetAsAdded(T entity);
             T GetByPredicate(Expression<Func<T, bool>> predicate);
+
+            ICollection<T> GetMultipleByPredicate(Expression<Func<T, bool>> predicate);
         }
 
         public interface IUnitOfWork

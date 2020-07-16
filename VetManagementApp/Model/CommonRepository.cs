@@ -78,6 +78,10 @@ namespace VetManagementApp.Model
             return _dbSet.Where(predicate).FirstOrDefault();
         }
 
+        public virtual ICollection<T> GetMultipleByPredicate(Expression<Func<T, bool>> predicate)
+        {
+            return _dbSet.Where(predicate).ToList();
+        }
         public bool DeleteAll()
         {
             _dbSet.RemoveRange(_dbSet.AsEnumerable());
