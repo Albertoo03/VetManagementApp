@@ -880,6 +880,8 @@ namespace VetManagementApp.ViewModel
 
             RaisePropertyChanged(() => AnimalBasicInfos);
             SelectedAnimalBasicInfo = null;
+
+            await Task.Run(() => AppendLog($"New animal species '{animalBasicInfo.Species}' added to the database."));
         }
 
         private async Task AddNewMedicineAsync()
@@ -920,6 +922,8 @@ namespace VetManagementApp.ViewModel
             MedicineToAddDose = "";
             MedicineToAddTargetAnimal = "";
             SelectedMedicine = null;
+
+            await Task.Run(() => AppendLog($"New medicine '{medicine.Name}' added to the database."));
         }
 
         private async Task RemoveAllAnimalBasicInfosAsync()
@@ -949,6 +953,8 @@ namespace VetManagementApp.ViewModel
 
             SelectedAnimalBasicInfo = null;
             RaisePropertyChanged(() => AnimalBasicInfos);
+
+            await Task.Run(() => AppendLog($"All animals have been removed from the database."));
         }
         
         private async Task RemoveAllMedicinesAsync()
@@ -963,6 +969,8 @@ namespace VetManagementApp.ViewModel
             RaisePropertyChanged(() => Medicines);
             RaisePropertyChanged(() => AnimalBasicInfos);
             RaisePropertyChanged(() => TreatedAnimals);
+
+            await Task.Run(() => AppendLog($"All medicines have been removed from the database."));
         }
 
         private async Task RemoveSelectedAnimalBasicInfoAsync()
@@ -971,18 +979,17 @@ namespace VetManagementApp.ViewModel
             {
                 try
                 {
-               
-                        using (var unitOfWork = new UnitOfWork())
-                        {
-                            if (SelectedAnimalBasicInfo == null)
-                                return;
 
-                            unitOfWork.AnimalBasicInfos.Delete(SelectedAnimalBasicInfo.Species);
+                    using (var unitOfWork = new UnitOfWork())
+                    {
+                        if (SelectedAnimalBasicInfo == null)
+                            return;
 
-                            unitOfWork.Save();
-                        }
+                        unitOfWork.AnimalBasicInfos.Delete(SelectedAnimalBasicInfo.Species);
 
-                    
+                        unitOfWork.Save();
+                    }
+
                 }
                 catch(Exception ex)
                 {
@@ -999,9 +1006,13 @@ namespace VetManagementApp.ViewModel
                 }
             });
 
+
+            await Task.Run(() => AppendLog($"{SelectedAnimalBasicInfo.Species} species has been removed from the database."));
+
             SelectedAnimalBasicInfo = null;
             RaisePropertyChanged(() => AnimalBasicInfos);
         }
+
         private async Task RemoveSelectedMedicineAsync()
         {
             await Task.Run(() =>
@@ -1017,6 +1028,8 @@ namespace VetManagementApp.ViewModel
                 }
 
             });
+
+            await Task.Run(() => AppendLog($"{SelectedMedicine.Name} medicine has been removed from the database."));
 
             SelectedMedicine = null;
             RaisePropertyChanged(() => Medicines);
@@ -1203,6 +1216,8 @@ namespace VetManagementApp.ViewModel
             AppointmentDate = DateTime.Now;
             AppointmentDescription = null;
             AppointmentPurposeOfVisit = PurposeOfVisit.FirstVisit;
+
+            await Task.Run(() => AppendLog($"New appointment has been scheduled."));
         }
 
         private async Task<bool> CheckIfAllConditionsToMakeAppointmentAreMet()
@@ -1266,6 +1281,8 @@ namespace VetManagementApp.ViewModel
 
             });
 
+            await Task.Run(() => AppendLog($"{SelectedCustomer.FullName} has been removed from the database."));
+
             SelectedCustomer = null;
             RaisePropertyChanged(() => Customers);
             RaisePropertyChanged(() => TreatedAnimals);
@@ -1296,6 +1313,8 @@ namespace VetManagementApp.ViewModel
             RaisePropertyChanged(() => Customers);
             //RaisePropertyChanged(() => Appointments);
             RaisePropertyChanged(() => TreatedAnimals);
+
+            await Task.Run(() => AppendLog($"All customers have been removed from the database."));
         }
 
         private async Task RemoveSelectedAppointmentAsync()
@@ -1344,6 +1363,7 @@ namespace VetManagementApp.ViewModel
 
             SelectedAppointment = null;
             //RaisePropertyChanged(() => Appointments);
+            await Task.Run(() => AppendLog($"One of the appointments has been removed from the database."));
         }
 
         private async Task ShowPrefillingDatabaseWindowAsync()
@@ -1370,6 +1390,8 @@ namespace VetManagementApp.ViewModel
 
         private async Task LeftMouseDoubleOnAvailableMedicinesClickAsync(Medicine selectedMedicine)
         {
+            int animalId = 0;
+
             if (selectedMedicine == null)
                 return;
 
@@ -1380,8 +1402,10 @@ namespace VetManagementApp.ViewModel
                     var animal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
                     var medicine = unitOfWork.Medicines.Get(selectedMedicine.Id);
 
+                    animalId = animal.Id;
 
                     animal.AssignedMedicines.Add(medicine);
+
 
                     Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
 
@@ -1404,11 +1428,12 @@ namespace VetManagementApp.ViewModel
 
             }
 
-            
+            await Task.Run(() => AppendLog($"{selectedMedicine.Name} medicine has been assigned to animal with Id:{animalId}."));
         }
 
         private async Task LeftMouseDoubleOnAssignedMedicinesClickAsync(Medicine selectedMedicine)
         {
+            int animalId = 0;
 
             if (selectedMedicine == null)
                 return;
@@ -1420,7 +1445,7 @@ namespace VetManagementApp.ViewModel
                     var animal = unitOfWork.Animals.Get(SelectedAppointment.AppointedAnimal.Id);
                     var medicine = unitOfWork.Medicines.Get(selectedMedicine.Id);
 
-
+                    animalId = animal.Id;
                     animal.AssignedMedicines.Remove(medicine);
 
                     Appointments = new ObservableCollection<Appointment>(unitOfWork.Appointments.GetAll());
@@ -1441,8 +1466,9 @@ namespace VetManagementApp.ViewModel
                 Debug.WriteLine(ex.InnerException);
                 Debug.WriteLine("==================");
 
-
             }
+
+            await Task.Run(() => AppendLog($"{selectedMedicine.Name} medicine has been unassigned from animal with Id:{animalId}."));
         }
 
         /// <summary>
@@ -1489,6 +1515,7 @@ namespace VetManagementApp.ViewModel
 
             //RaisePropertyChanged(() => Appointments);
 
+            await Task.Run(() => AppendLog($"Status of appointment with Id:{SelectedAppointment.Id} has been changed."));
         }
 
         private async Task OnRaiseFilterAppointmentChangedEvent(string filterSelection)
