@@ -9,7 +9,7 @@ namespace VetManagementApp.Model.DbContexts
 {
     public class VetManagementAppDbContext : DbContext
     {
-        public VetManagementAppDbContext() : base("VetManagementAppDb")
+        public VetManagementAppDbContext() : base("name=VetManagementAppDbConnectionString")
         {
             //this.Configuration.LazyLoadingEnabled = false;
         }
