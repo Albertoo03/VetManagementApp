@@ -105,6 +105,10 @@
     <Compile Include="Migrations\202007151708476_AddedStateOfVisitToAppointmentTable.designer.cs">
       <DependentUpon>202007151708476_AddedStateOfVisitToAppointmentTable.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202007161015354_TargetAnimalAddedToMedicineTable.cs" />
+    <Compile Include="Migrations\202007161015354_TargetAnimalAddedToMedicineTable.designer.cs">
+      <DependentUpon>202007161015354_TargetAnimalAddedToMedicineTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Model\AnimalBasicInfo.cs" />
     <Compile Include="Model\AnimalBasicInfoRepository.cs" />
@@ -196,6 +200,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202007151708476_AddedStateOfVisitToAppointmentTable.resx">
       <DependentUpon>202007151708476_AddedStateOfVisitToAppointmentTable.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202007161015354_TargetAnimalAddedToMedicineTable.resx">
+      <DependentUpon>202007161015354_TargetAnimalAddedToMedicineTable.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
