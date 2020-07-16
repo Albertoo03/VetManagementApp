@@ -70,8 +70,8 @@ namespace VetManagementApp.ViewModel
         private string _animalToAddName;
         private string _appointmentDescription;
         private string _currentlySelectedFilterActionOnAppointmentTab = _showAllAppointments;
+        private string _logsToShow;
 
-        
         private bool _showOwnedAnimalsChecked;
         private bool _showAppointmentsHistoryChecked;
         private bool _addNewCustomerIsChecked = true;
@@ -82,10 +82,28 @@ namespace VetManagementApp.ViewModel
         private bool _showAllAppointmentsIsChecked = false;
         private bool _showOnlyPastAppointmentsIsChecked = false;
         private bool _showOnlyUpcomingAppointmentsIsChecked = false;
+        private bool _autoScrollLogs = true;
 
         #endregion
 
         #region Properties
+        public StringBuilder Logs { get; set; }
+        public string LogsToShow
+        {
+            get
+            {
+                return _logsToShow;
+            }
+            set
+            {
+                if (_logsToShow != value)
+                {
+                    _logsToShow = value;
+                    RaisePropertyChanged(() => LogsToShow);
+                }
+            }
+        }
+
         public string AnimalBasicInfoToAddSpecies
         {
             get => _animalBasicInfoToAddSpecies;
@@ -284,6 +302,8 @@ namespace VetManagementApp.ViewModel
                 }
             }
         }
+
+        
 
         public bool ShowOwnedAnimalsChecked
         {
@@ -487,6 +507,18 @@ namespace VetManagementApp.ViewModel
                     return true;
             }
         }
+        public bool AutoScrollLogs
+        {
+            get
+            {
+                return _autoScrollLogs;
+            }
+            set
+            {
+                _autoScrollLogs = value;
+                RaisePropertyChanged(() => AutoScrollLogs);
+            }
+        }
 
         public Customer SelectedCustomer
         {
@@ -641,6 +673,7 @@ namespace VetManagementApp.ViewModel
 
         private IAsyncCommand _removeSelectedCustomerAsyncCommand;
         private IAsyncCommand _showPrefillingDatabaseWindowAsyncCommand;
+        private IAsyncCommand _openLogsWindowAsyncCommand;
         private IAsyncCommand<IList> _addNewAnimalAsyncCommand;
         private IAsyncCommand _addNewMedicineAsyncCommand;
         private IAsyncCommand _removeAllAnimalsAsyncCommand;
@@ -652,6 +685,7 @@ namespace VetManagementApp.ViewModel
         private IAsyncCommand _removeSelectedAppointmentAsyncCommand;
         private IAsyncCommand<Medicine> _leftMouseDoubleClickOnAvailableMedicinesAsyncCommand;
         private IAsyncCommand<Medicine> _leftMouseDoubleClickOnAssignedMedicinesAsyncCommand;
+        private AsyncCommand _autoScrollLogsAsyncCommand;
 
         public IAsyncCommand RemoveSelectedCustomerAsyncCommand
         {
@@ -660,6 +694,10 @@ namespace VetManagementApp.ViewModel
         public IAsyncCommand ShowPrefillingDatabaseWindowAsyncCommand
         {
             get => _showPrefillingDatabaseWindowAsyncCommand ?? new AsyncCommand(() => ShowPrefillingDatabaseWindowAsync());
+        }
+        public IAsyncCommand OpenLogsWindowAsyncCommand
+        {
+            get => _openLogsWindowAsyncCommand ?? new AsyncCommand(() => OpenLogsWindowAsync());
         }
         public IAsyncCommand<IList> AddNewAnimalAsyncCommand
         {
@@ -705,7 +743,11 @@ namespace VetManagementApp.ViewModel
         {
             get => _leftMouseDoubleClickOnAssignedMedicinesAsyncCommand ?? new AsyncCommand<Medicine>(LeftMouseDoubleOnAssignedMedicinesClickAsync);
         }
-
+        public IAsyncCommand AutoScrollLogsAsyncCommand
+        {
+            get =>_autoScrollLogsAsyncCommand ?? new AsyncCommand(() => AutoScrollLogsAsync());
+            
+        }
         #endregion
 
         #region Collections
@@ -786,25 +828,7 @@ namespace VetManagementApp.ViewModel
         }
         #endregion
 
-        #region Dependency properties
-        public class MultiSelectBindableDataGrid : DataGrid
-        {
-            public static readonly DependencyProperty SelectedItemsProperty =
-                DependencyProperty.Register("SelectedItems", typeof(IList), typeof(MultiSelectBindableDataGrid), new PropertyMetadata(default(IList)));
 
-            public new IList SelectedItems
-            {
-                get { return (IList)GetValue(SelectedItemsProperty); }
-                set { throw new Exception("This property is read-only. To bind to it you must use 'Mode=OneWayToSource'."); }
-            }
-
-            protected override void OnSelectionChanged(SelectionChangedEventArgs e)
-            {
-                base.OnSelectionChanged(e);
-                SetValue(SelectedItemsProperty, base.SelectedItems);
-            }
-        }
-        #endregion
 
         #region Command action tasks
 
@@ -1318,6 +1342,17 @@ namespace VetManagementApp.ViewModel
             }
         }
 
+        private async Task OpenLogsWindowAsync()
+        {
+            if (!IsWindowOpen<Window>("LogsWindow"))
+            {
+                LogsWindow logsWindow = new LogsWindow();
+                logsWindow.Owner = System.Windows.Application.Current.MainWindow;
+                logsWindow.Show();
+                logsWindow.Name = "LogsWindow";
+            }
+        }
+
         private async Task LeftMouseDoubleOnAvailableMedicinesClickAsync(Medicine selectedMedicine)
         {
             if (selectedMedicine == null)
@@ -1395,6 +1430,14 @@ namespace VetManagementApp.ViewModel
             }
         }
 
+        /// <summary>
+        /// Enable/disable auto scroll in logs window.
+        /// </summary>
+        /// <returns></returns>
+        public async Task AutoScrollLogsAsync()
+        {
+            AutoScrollLogs = !AutoScrollLogs;
+        }
         #endregion
 
         #region Event callbacks
@@ -1439,8 +1482,26 @@ namespace VetManagementApp.ViewModel
         }
         #endregion
 
+        #region Method definitions
+        /// <summary>
+        /// Appends log to log window
+        /// </summary>
+        /// <param name="log"></param>
+        public void AppendLog(string log)
+        {
+            if (log == null)
+                return;
+
+            DateTime dateTime = DateTime.Now;
+            var cultureInfo = new CultureInfo("en-US");
+            LogsToShow = Logs.AppendFormat("> {0} :: {1} \n", dateTime.ToString(cultureInfo), log).ToString();
+
+        }
+        #endregion
         public MainViewModel()
         {
+            Logs = new StringBuilder("");
+
             // Add callback to the event handler
             RaiseStatusOfAppointmentChangedEvent += OnRaiseStatusOfAppointmentChangedEvent;
             RaiseFilterAppointmentChangedEvent += OnRaiseFilterAppointmentChangedEvent;
@@ -1449,7 +1510,8 @@ namespace VetManagementApp.ViewModel
             {
                 Appointments = new ObservableCollection<Appointment>(uow.Appointments.GetAll());
             }
-            
+
+            AppendLog("App started.");
         }
 
 

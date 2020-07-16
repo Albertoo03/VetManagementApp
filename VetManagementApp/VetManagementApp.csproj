@@ -56,6 +56,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\Converters.cs" />
+    <Compile Include="DependencyProperties\DependencyProperties.cs" />
     <Compile Include="Helpers\AsyncCommandUtility.cs" />
     <Compile Include="Migrations\202007071952340_InitialCreate.cs" />
     <Compile Include="Migrations\202007071952340_InitialCreate.designer.cs">
@@ -115,10 +116,17 @@
     <Compile Include="Model\AnimalRepository.cs" />
     <Compile Include="Model\AppointmentRepository.cs" />
     <Compile Include="Validators\Validators.cs" />
+    <Compile Include="View\LogsWindow.xaml.cs">
+      <DependentUpon>LogsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\PreliminaryDatabaseFillingWindow.xaml.cs">
       <DependentUpon>PreliminaryDatabaseFillingWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="ResourceDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\LogsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

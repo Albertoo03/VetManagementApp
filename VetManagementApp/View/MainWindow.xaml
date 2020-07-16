@@ -29,7 +29,7 @@
                     <MenuItem Header="_Exit" IsEnabled="True" Command="{Binding ExitTheAppAsyncCommand}"/>
                 </MenuItem>
                 <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"/>
-                <MenuItem Header="_Help"/>
+                <MenuItem Header="_Open logs window" Command="{Binding OpenLogsWindowAsyncCommand}"/>
                 <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"/>
             </Menu>
         </DockPanel>
