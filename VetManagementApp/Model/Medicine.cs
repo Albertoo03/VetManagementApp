@@ -14,6 +14,7 @@ namespace VetManagementApp.Model
         public string Name { get; set; }
         public string Manufacturer { get; set; }
         public string Dose { get; set; }
+        public string TargetAnimal { get; set; }
         public virtual ICollection<AnimalBasicInfo> AssignedAnimals { get; set; }
 
     }
